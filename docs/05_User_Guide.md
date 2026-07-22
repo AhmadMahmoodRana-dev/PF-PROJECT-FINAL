@@ -600,11 +600,11 @@ Program yeh files `data/` folder mein banata hai:
 
 | File | Format | Kya Store Hota Hai |
 |------|--------|-------------------|
-| `products.dat` | Binary | Saare products ka data (ID, naam, category, etc.) |
-| `admin.dat` | Binary | Admin username aur password |
+| `products.dat` | Text | Saare products ka data (ID, naam, category, etc.) |
+| `admin.dat` | Text | Admin username aur password |
 | `logs.txt` | Text | Har activity ka record (login, add, delete, etc.) |
 | `reports.txt` | Text | Last generated report |
-| `backup.dat` | Binary | Products data ka backup copy |
+| `backup.dat` | Text | Products data ka backup copy |
 
 ### logs.txt Example:
 
@@ -621,8 +621,8 @@ Program yeh files `data/` folder mein banata hai:
 
 ### Important:
 - `data/` folder **delete mat karein** warna saara data kho jayega
-- `.dat` files binary hain - Notepad mein nahi khulengi (garbage dikhega)
-- `.txt` files Notepad++ ya kisi bhi text editor mein khul sakti hain
+- `.dat` files ab text format mein hain - Notepad ya kisi bhi text editor mein khol kar dekh sakte hain
+- Har field ek nayi line par likha hota hai, isliye easily readable hai
 
 ---
 

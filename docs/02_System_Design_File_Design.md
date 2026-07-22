@@ -324,35 +324,44 @@ Is section mein hum decide karte hain ke har file mein kya data hoga aur kis for
 
 **Purpose:** Saare products ka data store karna
 
-**Format:** Binary file (struct array)
+**Format:** Text file (one field per line)
 
 **Structure:**
 ```cpp
 struct Product {
     int id;                 // Product ID (unique)
-    char name[50];          // Product name
-    char category[30];      // Product category (e.g., Electronics, Grocery)
-    char supplier[50];      // Supplier name
+    string name;            // Product name
+    string category;        // Product category (e.g., Electronics, Grocery)
+    string supplier;        // Supplier name
     int quantity;           // Current stock quantity
     double purchasePrice;   // Price we buy at
     double sellingPrice;    // Price we sell at
 };
 ```
 
-**Example Data:**
+**Example File Content:**
 ```
-ID: 1001
-Name: Dell Laptop
-Category: Electronics
-Supplier: TechWorld Pvt Ltd
-Quantity: 25
-Purchase Price: 45000.00
-Selling Price: 55000.00
+2
+101
+Dell Laptop
+Electronics
+TechWorld Pvt Ltd
+25
+45000
+55000
+102
+Mouse
+Accessories
+Logitech
+50
+500
+800
 ```
 
 **Roman Urdu:** 
-- Binary file use karenge taake data fast read/write ho
-- Har product ek struct record hoga
+- Text file use karte hain - har field ek nayi line par
+- Pehli line mein total products ka count hota hai
+- Phir har product ke 7 fields line by line likhe hote hain
 - Array mein maximum 100 products rakh sakte hain
 
 ---
@@ -361,20 +370,20 @@ Selling Price: 55000.00
 
 **Purpose:** Admin login credentials store karna
 
-**Format:** Binary file
+**Format:** Text file (one value per line)
 
 **Structure:**
 ```cpp
 struct Admin {
-    char username[30];      // Admin username
-    char password[30];      // Admin password
+    string username;        // Admin username
+    string password;        // Admin password
 };
 ```
 
 **Default Values:**
 ```
-Username: admin
-Password: admin123
+admin
+admin123
 ```
 
 **Roman Urdu:**
@@ -446,12 +455,12 @@ ID: 1008 | HDMI Cable | Qty: 0
 
 **Purpose:** Products data ka backup lena
 
-**Format:** Binary file (same as products.dat)
+**Format:** Text file (same format as products.dat)
 
 **Roman Urdu:**
-- products.dat ki exact copy
-- User jab "Backup Data" option select karta hai toh current products.dat backup.dat mein copy ho jata hai
-- Agar products.dat corrupt ho jaye toh backup se restore kar sakte hain
+- products.dat ki exact copy (text format mein)
+- User jab "Backup Data" option select karta hai toh products.dat copy ho kar backup.dat ban jata hai
+- Har line ko parh kar doosri file mein likha jata hai
 
 ---
 
@@ -461,9 +470,9 @@ ID: 1008 | HDMI Cable | Qty: 0
 // Product structure definition
 struct Product {
     int id;                 // Unique Product ID
-    char name[50];          // Product name (max 50 characters)
-    char category[30];      // Product category
-    char supplier[50];      // Supplier company name
+    string name;            // Product name
+    string category;        // Product category
+    string supplier;        // Supplier company name
     int quantity;           // Current stock quantity
     double purchasePrice;   // Cost price (we buy at)
     double sellingPrice;    // Selling price (we sell at)
@@ -471,16 +480,16 @@ struct Product {
 
 // Admin structure definition
 struct Admin {
-    char username[30];      // Admin username
-    char password[30];      // Admin password
+    string username;        // Admin username
+    string password;        // Admin password
 };
 ```
 
 **Roman Urdu Explanation:**
 - `int id` - Har product ka unique number, do products ka same ID nahi ho sakta
-- `char name[50]` - Product ka naam, zyada se zyada 50 characters
-- `char category[30]` - Product kis category mein hai (Electronics, Grocery, etc.)
-- `char supplier[50]` - Supplier company ka naam
+- `string name` - Product ka naam (C++ string - koi character limit nahi)
+- `string category` - Product kis category mein hai (Electronics, Grocery, etc.)
+- `string supplier` - Supplier company ka naam
 - `int quantity` - Abhi kitne products stock mein hain
 - `double purchasePrice` - Humne kis price par kharida
 - `double sellingPrice` - Hum kis price par bechenge
@@ -559,7 +568,7 @@ int productCount = 0;             // Current number of products
 > - System menu-driven hoga
 > - 12 modules honge jo alag alag kaam karenge
 > - 5 files use hongi (products.dat, admin.dat, reports.txt, logs.txt, backup.dat)
-> - Product structure mein 7 fields honge
+> - Product structure mein 7 fields honge (string use karte hain char[] ki jagah)
 > - Maximum 100 products store kar sakte hain
 > - Flowcharts banaye taake program flow samajh aaye
 > 
@@ -586,7 +595,7 @@ int productCount = 0;             // Current number of products
 | Problem | Solution |
 |---------|----------|
 | Kitne products store kar sakte hain? | Array size 100 set kiya - chote business ke liye kaafi |
-| Binary ya text file? | Binary for products/admin (fast), Text for reports/logs (readable) |
+| Binary ya text file? | Text for all files (readable, beginner-friendly, works with string) |
 | Password encrypt karein? | PF level par simple store karte hain (security advanced topic hai) |
 
 ---

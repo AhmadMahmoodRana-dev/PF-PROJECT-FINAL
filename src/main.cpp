@@ -1,17 +1,18 @@
 #include "product.h"
 #include "utils.h"
-#include <cstdio>
 
 Product products[MAX_PRODUCTS];
 int productCount = 0;
 Admin admin;
 
-const char* PRODUCTS_FILE = "data/products.dat";
-const char* ADMIN_FILE = "data/admin.dat";
-const char* LOGS_FILE = "data/logs.txt";
-const char* REPORTS_FILE = "data/reports.txt";
-const char* BACKUP_FILE = "data/backup.dat";
+// File paths for data storage
+const string PRODUCTS_FILE = "data/products.dat";
+const string ADMIN_FILE = "data/admin.dat";
+const string LOGS_FILE = "data/logs.txt";
+const string REPORTS_FILE = "data/reports.txt";
+const string BACKUP_FILE = "data/backup.dat";
 
+// Function declarations
 void showMenu();
 int getMenuChoice();
 void addProduct();
@@ -32,7 +33,7 @@ void saveData();
 void loadData();
 void saveAdmin();
 void loadAdmin();
-void writeLog(const char* message);
+void writeLog(const string& message);
 bool isDuplicateID(int id);
 int findProductIndex(int id);
 
@@ -50,10 +51,12 @@ int main() {
 
     pause();
 
+    // Load saved data and admin credentials from files
     loadData();
     createDefaultAdmin();
     loadAdmin();
 
+    // Authenticate the admin user
     if (!login()) {
         cout << "\n   Login failed! Maximum attempts exceeded." << endl;
         cout << "   Exiting system..." << endl;
@@ -63,6 +66,7 @@ int main() {
 
     int choice;
 
+    // Main menu loop - keeps showing menu until user chooses exit (12)
     do {
         showMenu();
         choice = getMenuChoice();
@@ -102,6 +106,7 @@ int main() {
                 backupData();
                 break;
             case 12:
+                // Save data and exit
                 saveData();
                 writeLog("LOGOUT - User exited the system");
                 clearScreen();
@@ -122,9 +127,10 @@ int main() {
     return 0;
 }
 
+// Authenticates the admin with username and password (3 attempts)
 bool login() {
     int attempts = 3;
-    char username[30], password[30];
+    string username, password;
 
     while (attempts > 0) {
         clearScreen();
@@ -136,23 +142,20 @@ bool login() {
         cout << "   Attempts Remaining: " << attempts << endl;
         cout << "\n";
         cout << "   Username: ";
-        cin.getline(username, 30);
+        getline(cin, username);
         cout << "   Password: ";
-        cin.getline(password, 30);
+        getline(cin, password);
 
-        if (strcmp(username, admin.username) == 0 && strcmp(password, admin.password) == 0) {
+        // Compare entered credentials with stored admin data
+        if (username == admin.username && password == admin.password) {
             cout << "\n   Login Successful! Welcome, " << admin.username << "!" << endl;
-            string logMsg = "LOGIN SUCCESS - User: ";
-            logMsg += admin.username;
-            writeLog(logMsg.c_str());
+            writeLog("LOGIN SUCCESS - User: " + admin.username);
             pause();
             return true;
         } else {
             cout << "\n   Invalid username or password!" << endl;
             attempts--;
-            string logMsg = "LOGIN FAILED - Attempted Username: ";
-            logMsg += username;
-            writeLog(logMsg.c_str());
+            writeLog("LOGIN FAILED - Attempted Username: " + username);
             pause();
         }
     }
@@ -161,52 +164,80 @@ bool login() {
     return false;
 }
 
+// Creates a default admin account if no admin file exists
 void createDefaultAdmin() {
-    ifstream checkFile(ADMIN_FILE, ios::binary);
+    ifstream checkFile(ADMIN_FILE);
     if (checkFile.good()) {
         checkFile.close();
-        return;
+        return; // Admin file already exists
     }
     checkFile.close();
 
-    strcpy(admin.username, "admin");
-    strcpy(admin.password, "admin123");
+    // Set default credentials
+    admin.username = "admin";
+    admin.password = "admin123";
     saveAdmin();
 }
 
+// Saves admin credentials to file (text format)
 void saveAdmin() {
-    ofstream file(ADMIN_FILE, ios::binary);
+    ofstream file(ADMIN_FILE);
     if (file.is_open()) {
-        file.write((char*)(&admin), sizeof(Admin));
+        file << admin.username << endl;
+        file << admin.password << endl;
         file.close();
     }
 }
 
+// Loads admin credentials from file
 void loadAdmin() {
-    ifstream file(ADMIN_FILE, ios::binary);
+    ifstream file(ADMIN_FILE);
     if (file.is_open()) {
-        file.read((char*)(&admin), sizeof(Admin));
+        getline(file, admin.username);
+        getline(file, admin.password);
         file.close();
     }
 }
 
+// Saves all product data to file (text format, one field per line)
 void saveData() {
-    ofstream file(PRODUCTS_FILE, ios::binary);
+    ofstream file(PRODUCTS_FILE);
     if (file.is_open()) {
-        file.write((char*)(&productCount), sizeof(int));
-        file.write((char*)(products), sizeof(Product) * productCount);
+        // First line: total number of products
+        file << productCount << endl;
+        for (int i = 0; i < productCount; i++) {
+            file << products[i].id << endl;
+            file << products[i].name << endl;
+            file << products[i].category << endl;
+            file << products[i].supplier << endl;
+            file << products[i].quantity << endl;
+            file << products[i].purchasePrice << endl;
+            file << products[i].sellingPrice << endl;
+        }
         file.close();
     } else {
         cout << "\n   ERROR: Could not save data to file!" << endl;
     }
 }
 
+// Loads all product data from file
 void loadData() {
-    ifstream file(PRODUCTS_FILE, ios::binary);
+    ifstream file(PRODUCTS_FILE);
     if (file.is_open()) {
-        file.read((char*)(&productCount), sizeof(int));
+        file >> productCount;
+        // Only read products if the count is valid
         if (productCount > 0 && productCount <= MAX_PRODUCTS) {
-            file.read((char*)(products), sizeof(Product) * productCount);
+            for (int i = 0; i < productCount; i++) {
+                file >> products[i].id;
+                file.ignore(); // skip the newline after id
+                getline(file, products[i].name);
+                getline(file, products[i].category);
+                getline(file, products[i].supplier);
+                file >> products[i].quantity;
+                file >> products[i].purchasePrice;
+                file >> products[i].sellingPrice;
+                file.ignore(); // skip the newline after selling price
+            }
         } else {
             productCount = 0;
         }
@@ -216,7 +247,8 @@ void loadData() {
     }
 }
 
-void writeLog(const char* message) {
+// Writes a log entry with timestamp to the log file
+void writeLog(const string& message) {
     ofstream file(LOGS_FILE, ios::app);
     if (file.is_open()) {
         file << "[" << getCurrentDateTime() << "] " << message << endl;
@@ -224,6 +256,7 @@ void writeLog(const char* message) {
     }
 }
 
+// Checks if a product with the given ID already exists
 bool isDuplicateID(int id) {
     for (int i = 0; i < productCount; i++) {
         if (products[i].id == id) {
@@ -233,6 +266,7 @@ bool isDuplicateID(int id) {
     return false;
 }
 
+// Finds the index of a product by its ID, returns -1 if not found
 int findProductIndex(int id) {
     for (int i = 0; i < productCount; i++) {
         if (products[i].id == id) {
@@ -242,6 +276,7 @@ int findProductIndex(int id) {
     return -1;
 }
 
+// Adds a new product to the inventory
 void addProduct() {
     clearScreen();
     cout << "\n";
@@ -249,6 +284,7 @@ void addProduct() {
     cout << "      ADD NEW PRODUCT" << endl;
     printLine(50);
 
+    // Check if we have space for more products
     if (productCount >= MAX_PRODUCTS) {
         cout << "\n   ERROR: Product limit reached! Cannot add more products." << endl;
         pause();
@@ -260,6 +296,7 @@ void addProduct() {
     cout << "\n   Enter Product ID: ";
     cin >> p.id;
 
+    // Check if a product with this ID already exists
     if (isDuplicateID(p.id)) {
         cout << "\n   ERROR: Product ID " << p.id << " already exists!" << endl;
         cin.clear();
@@ -268,16 +305,16 @@ void addProduct() {
         return;
     }
 
-    cin.ignore(10000, '\n');
+    cin.ignore(10000, '\n'); // Clear the newline after reading id
 
     cout << "   Enter Product Name: ";
-    cin.getline(p.name, 50);
+    getline(cin, p.name);
 
     cout << "   Enter Category (e.g., Electronics, Grocery): ";
-    cin.getline(p.category, 30);
+    getline(cin, p.category);
 
     cout << "   Enter Supplier Name: ";
-    cin.getline(p.supplier, 50);
+    getline(cin, p.supplier);
 
     cout << "   Enter Quantity: ";
     cin >> p.quantity;
@@ -302,20 +339,20 @@ void addProduct() {
 
     cin.ignore(10000, '\n');
 
+    // Add product to array and increment count
     products[productCount] = p;
     productCount++;
 
     saveData();
 
-    char logMsg[200];
-    sprintf(logMsg, "PRODUCT ADDED - ID: %d, Name: %s", p.id, p.name);
-    writeLog(logMsg);
+    writeLog("PRODUCT ADDED - ID: " + to_string(p.id) + ", Name: " + p.name);
 
     cout << "\n   Product added successfully!" << endl;
     printLine(50);
     pause();
 }
 
+// Displays all products in a table format
 void viewProducts() {
     clearScreen();
     cout << "\n";
@@ -354,6 +391,7 @@ void viewProducts() {
     pause();
 }
 
+// Searches for a product by ID or name
 void searchProduct() {
     clearScreen();
     cout << "\n";
@@ -375,6 +413,7 @@ void searchProduct() {
     cin >> searchChoice;
     cin.ignore(10000, '\n');
 
+    // Search by product ID
     if (searchChoice == 1) {
         int searchID;
         cout << "\n   Enter Product ID to search: ";
@@ -396,14 +435,17 @@ void searchProduct() {
         } else {
             cout << "\n   Product with ID " << searchID << " not found!" << endl;
         }
+
+    // Search by product name (partial match)
     } else if (searchChoice == 2) {
-        char searchName[50];
+        string searchName;
         cout << "\n   Enter Product Name to search: ";
-        cin.getline(searchName, 50);
+        getline(cin, searchName);
 
         bool found = false;
         for (int i = 0; i < productCount; i++) {
-            if (strstr(products[i].name, searchName) != NULL) {
+            // Check if search term appears anywhere in the product name
+            if (products[i].name.find(searchName) != string::npos) {
                 if (!found) {
                     cout << "\n   Matching Products:" << endl;
                     printLine(75);
@@ -437,6 +479,7 @@ void searchProduct() {
     pause();
 }
 
+// Updates a specific field of an existing product
 void updateProduct() {
     clearScreen();
     cout << "\n";
@@ -462,6 +505,7 @@ void updateProduct() {
         return;
     }
 
+    // Display current product details
     cout << "\n   Current Product Details:" << endl;
     printLine(40);
     cout << "   ID:            " << products[index].id << endl;
@@ -485,18 +529,19 @@ void updateProduct() {
     cin >> field;
     cin.ignore(10000, '\n');
 
+    // Update the chosen field
     switch (field) {
         case 1:
             cout << "   Enter new Name: ";
-            cin.getline(products[index].name, 50);
+            getline(cin, products[index].name);
             break;
         case 2:
             cout << "   Enter new Category: ";
-            cin.getline(products[index].category, 30);
+            getline(cin, products[index].category);
             break;
         case 3:
             cout << "   Enter new Supplier: ";
-            cin.getline(products[index].supplier, 50);
+            getline(cin, products[index].supplier);
             break;
         case 4:
             cout << "   Enter new Quantity: ";
@@ -521,14 +566,14 @@ void updateProduct() {
 
     saveData();
 
-    char logMsg[200];
-    sprintf(logMsg, "PRODUCT UPDATED - ID: %d, Field: %d", products[index].id, field);
-    writeLog(logMsg);
+    writeLog("PRODUCT UPDATED - ID: " + to_string(products[index].id) +
+        ", Field: " + to_string(field));
 
     cout << "\n   Product updated successfully!" << endl;
     pause();
 }
 
+// Deletes a product from the inventory
 void deleteProduct() {
     clearScreen();
     cout << "\n";
@@ -554,6 +599,7 @@ void deleteProduct() {
         return;
     }
 
+    // Show product details before deletion
     cout << "\n   Product Details:" << endl;
     printLine(40);
     cout << "   ID:            " << products[index].id << endl;
@@ -571,9 +617,10 @@ void deleteProduct() {
     cin.ignore(10000, '\n');
 
     if (confirm == 'y' || confirm == 'Y') {
-        char logMsg[200];
-        sprintf(logMsg, "PRODUCT DELETED - ID: %d, Name: %s", products[index].id, products[index].name);
+        string logMsg = "PRODUCT DELETED - ID: " + to_string(products[index].id) +
+            ", Name: " + products[index].name;
 
+        // Shift all products after index one position left
         for (int i = index; i < productCount - 1; i++) {
             products[i] = products[i + 1];
         }
@@ -590,6 +637,7 @@ void deleteProduct() {
     pause();
 }
 
+// Adds stock (increases quantity) for a product
 void stockIn() {
     clearScreen();
     cout << "\n";
@@ -629,16 +677,17 @@ void stockIn() {
     products[index].quantity += qty;
     saveData();
 
-    char logMsg[200];
-    sprintf(logMsg, "STOCK IN - ID: %d, Name: %s, Quantity Added: %d, New Stock: %d",
-            products[index].id, products[index].name, qty, products[index].quantity);
-    writeLog(logMsg);
+    writeLog("STOCK IN - ID: " + to_string(products[index].id) +
+        ", Name: " + products[index].name +
+        ", Quantity Added: " + to_string(qty) +
+        ", New Stock: " + to_string(products[index].quantity));
 
     cout << "\n   Stock updated successfully!" << endl;
     cout << "   New Stock of '" << products[index].name << "': " << products[index].quantity << endl;
     pause();
 }
 
+// Removes stock (decreases quantity) for a product
 void stockOut() {
     clearScreen();
     cout << "\n";
@@ -675,6 +724,7 @@ void stockOut() {
         cin.ignore(10000, '\n');
     }
 
+    // Check if there is enough stock to remove
     if (qty > products[index].quantity) {
         cout << "\n   ERROR: Not enough stock! Available: " << products[index].quantity << endl;
         pause();
@@ -684,16 +734,17 @@ void stockOut() {
     products[index].quantity -= qty;
     saveData();
 
-    char logMsg[200];
-    sprintf(logMsg, "STOCK OUT - ID: %d, Name: %s, Quantity Removed: %d, Remaining: %d",
-            products[index].id, products[index].name, qty, products[index].quantity);
-    writeLog(logMsg);
+    writeLog("STOCK OUT - ID: " + to_string(products[index].id) +
+        ", Name: " + products[index].name +
+        ", Quantity Removed: " + to_string(qty) +
+        ", Remaining: " + to_string(products[index].quantity));
 
     cout << "\n   Stock updated successfully!" << endl;
     cout << "   Remaining Stock of '" << products[index].name << "': " << products[index].quantity << endl;
     pause();
 }
 
+// Generates and displays different types of reports (also saves to file)
 void generateReport() {
     clearScreen();
     cout << "\n";
@@ -722,6 +773,7 @@ void generateReport() {
 
     ofstream reportFile(REPORTS_FILE);
 
+    // Full Inventory Report
     if (reportType == 1) {
         cout << "      FULL INVENTORY REPORT" << endl;
         printLine(50);
@@ -729,6 +781,7 @@ void generateReport() {
         int totalItems = 0;
         double totalValue = 0;
 
+        // Calculate totals
         for (int i = 0; i < productCount; i++) {
             totalItems += products[i].quantity;
             totalValue += products[i].quantity * products[i].sellingPrice;
@@ -739,6 +792,7 @@ void generateReport() {
         cout << "   Total Items in Stock: " << totalItems << endl;
         cout << "   Total Inventory Value: Rs." << totalValue << endl;
 
+        // Write report to file
         if (reportFile.is_open()) {
             reportFile << "==============================================\n";
             reportFile << "        INVENTORY REPORT\n";
@@ -764,6 +818,7 @@ void generateReport() {
             reportFile.close();
         }
 
+        // Display all products on screen
         cout << "\n   Products:" << endl;
         cout << left;
         cout << "   " << setw(6) << "ID"
@@ -784,6 +839,7 @@ void generateReport() {
         }
         printLine(75);
 
+    // Low Stock Report (quantity between 1 and 4)
     } else if (reportType == 2) {
         cout << "      LOW STOCK REPORT (Qty < 5)" << endl;
         printLine(50);
@@ -826,6 +882,7 @@ void generateReport() {
             reportFile.close();
         }
 
+    // Out of Stock Report (quantity = 0)
     } else if (reportType == 3) {
         cout << "      OUT OF STOCK REPORT (Qty = 0)" << endl;
         printLine(50);
@@ -877,6 +934,7 @@ void generateReport() {
     pause();
 }
 
+// Sorts the products array using bubble sort
 void sortProducts() {
     clearScreen();
     cout << "\n";
@@ -901,10 +959,12 @@ void sortProducts() {
 
     Product temp;
 
+    // Bubble sort implementation
     if (sortChoice == 1) {
+        // Sort by name using string comparison
         for (int i = 0; i < productCount - 1; i++) {
             for (int j = 0; j < productCount - i - 1; j++) {
-                if (strcmp(products[j].name, products[j + 1].name) > 0) {
+                if (products[j].name > products[j + 1].name) {
                     temp = products[j];
                     products[j] = products[j + 1];
                     products[j + 1] = temp;
@@ -915,6 +975,7 @@ void sortProducts() {
         writeLog("PRODUCTS SORTED - By Name");
 
     } else if (sortChoice == 2) {
+        // Sort by selling price (low to high)
         for (int i = 0; i < productCount - 1; i++) {
             for (int j = 0; j < productCount - i - 1; j++) {
                 if (products[j].sellingPrice > products[j + 1].sellingPrice) {
@@ -928,6 +989,7 @@ void sortProducts() {
         writeLog("PRODUCTS SORTED - By Price");
 
     } else if (sortChoice == 3) {
+        // Sort by quantity (low to high)
         for (int i = 0; i < productCount - 1; i++) {
             for (int j = 0; j < productCount - i - 1; j++) {
                 if (products[j].quantity > products[j + 1].quantity) {
@@ -948,6 +1010,7 @@ void sortProducts() {
 
     saveData();
 
+    // Display sorted products
     cout << "\n   Sorted Products:" << endl;
     cout << left;
     cout << "   " << setw(6) << "ID"
@@ -971,6 +1034,7 @@ void sortProducts() {
     pause();
 }
 
+// Shows products with low stock (quantity less than 5)
 void lowStockAlert() {
     clearScreen();
     cout << "\n";
@@ -1013,6 +1077,7 @@ void lowStockAlert() {
     pause();
 }
 
+// Creates a backup copy of the products data file
 void backupData() {
     clearScreen();
     cout << "\n";
@@ -1020,16 +1085,17 @@ void backupData() {
     cout << "      BACKUP DATA" << endl;
     printLine(50);
 
+    // Save current data first
     saveData();
 
-    ifstream source(PRODUCTS_FILE, ios::binary);
+    ifstream source(PRODUCTS_FILE);
     if (!source.is_open()) {
         cout << "\n   ERROR: No data file found to backup!" << endl;
         pause();
         return;
     }
 
-    ofstream dest(BACKUP_FILE, ios::binary);
+    ofstream dest(BACKUP_FILE);
     if (!dest.is_open()) {
         cout << "\n   ERROR: Could not create backup file!" << endl;
         source.close();
@@ -1037,7 +1103,12 @@ void backupData() {
         return;
     }
 
-    dest << source.rdbuf();
+    // Copy file contents line by line
+    string line;
+    while (getline(source, line)) {
+        dest << line << endl;
+    }
+
     source.close();
     dest.close();
 
@@ -1050,6 +1121,7 @@ void backupData() {
     pause();
 }
 
+// Displays the main menu options
 void showMenu() {
     clearScreen();
 
@@ -1074,6 +1146,7 @@ void showMenu() {
     printLine(50);
 }
 
+// Gets and returns the user's menu choice
 int getMenuChoice() {
     int choice;
     cout << "   Enter your choice (1-12): ";

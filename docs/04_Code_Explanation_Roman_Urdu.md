@@ -37,16 +37,11 @@ Yeh file humare project ki **foundation** hai. Ismein humne data structures defi
 ---
 
 ```cpp
-#include <cstring>
-```
-**Explanation:** `cstring` library C-style string functions ke liye hai. Hum `strcmp()` (do strings compare karna), `strcpy()` (string copy karna), aur `strstr()` (string ke andar string dhundna) use karenge.
-
----
-
-```cpp
 #include <string>
 ```
-**Explanation:** `string` library C++ ki string class ke liye hai. Hum log messages aur date/time ke liye `string` type use karenge.
+**Explanation:** `string` library C++ ki string class ke liye hai. Hum `string` type use karte hain jo C-style strings (`char[]`) se zyada safe aur easy hai. `string` ke saath hum `==` se compare kar sakte hain, `+` se jor sakte hain, aur `.find()` se search kar sakte hain.
+
+Note: Humne `<cstring>` nahi liya kyunki hum `strcmp`, `strcpy`, `strstr` jaise C functions use nahi kar rahe. C++ ka `string` class in sabka simple alternative provide karta hai.
 
 ---
 
@@ -81,9 +76,9 @@ using namespace std;
 ```cpp
 struct Product {
     int id;
-    char name[50];
-    char category[30];
-    char supplier[50];
+    string name;
+    string category;
+    string supplier;
     int quantity;
     double purchasePrice;
     double sellingPrice;
@@ -94,9 +89,9 @@ struct Product {
 | Field | Type | Matlab |
 |-------|------|--------|
 | `id` | `int` | Product ka unique number (jaise 1001, 1002). Do products ka ID same nahi ho sakta. |
-| `name` | `char[50]` | Product ka naam. 50 characters tak likh sakte hain. Jaise "Dell Laptop". |
-| `category` | `char[30]` | Product kis category mein hai. Jaise "Electronics", "Grocery". |
-| `supplier` | `char[50]` | Supplier company ka naam. Jaise "TechWorld Pvt Ltd". |
+| `name` | `string` | Product ka naam. C++ string use karte hain (koi character limit nahi). Jaise "Dell Laptop". |
+| `category` | `string` | Product kis category mein hai. Jaise "Electronics", "Grocery". |
+| `supplier` | `string` | Supplier company ka naam. Jaise "TechWorld Pvt Ltd". |
 | `quantity` | `int` | Kitne products stock mein hain. Jaise 25. |
 | `purchasePrice` | `double` | Humne kis price par kharida. Decimal value ho sakti hai jaise 45000.50. |
 | `sellingPrice` | `double` | Hum kis price par bechenge. Decimal value ho sakti hai. |
@@ -105,11 +100,11 @@ struct Product {
 
 ```cpp
 struct Admin {
-    char username[30];
-    char password[30];
+    string username;
+    string password;
 };
 ```
-**Explanation:** Yeh **Admin structure** hai. Login system ke liye use hota hai. Username 30 characters tak aur password 30 characters tak ho sakta hai.
+**Explanation:** Yeh **Admin structure** hai. Login system ke liye use hota hai. `string` type use kiya hai jo C++ ka standard text type hai - ismein koi character limit nahi hoti.
 
 ---
 
@@ -228,12 +223,11 @@ Yeh humari sabse badi file hai jismein saara logic hai.
 ```cpp
 #include "product.h"
 #include "utils.h"
-#include <cstdio>
 ```
 **Explanation:**
 - `"product.h"` - Apni product structure wali file include ki. Double quotes isliye kyunki yeh apni file hai.
 - `"utils.h"` - Helper functions wali file include ki.
-- `<cstdio>` - C standard I/O library. `sprintf()` function ke liye zaroori hai jo hum log messages format karne mein use karte hain.
+- `<cstdio>` ki zaroorat nahi kyunki hum `sprintf()` use nahi kar rahe. `to_string()` aur string concatenation (`+`) use karte hain jo zyada simple hai.
 
 ---
 
@@ -250,16 +244,16 @@ Admin admin;
 ---
 
 ```cpp
-const char* PRODUCTS_FILE = "data/products.dat";
-const char* ADMIN_FILE = "data/admin.dat";
-const char* LOGS_FILE = "data/logs.txt";
-const char* REPORTS_FILE = "data/reports.txt";
-const char* BACKUP_FILE = "data/backup.dat";
+const string PRODUCTS_FILE = "data/products.dat";
+const string ADMIN_FILE = "data/admin.dat";
+const string LOGS_FILE = "data/logs.txt";
+const string REPORTS_FILE = "data/reports.txt";
+const string BACKUP_FILE = "data/backup.dat";
 ```
-**Explanation:** Yeh **file paths** hain. `const char*` ka matlab hai ke yeh read-only strings hain jo change nahi hongi.
-- `products.dat` - Saare products ka data binary format mein store hota hai.
-- `admin.dat` - Admin login credentials binary format mein.
-- `logs.txt` - Har activity ka record (text format mein).
+**Explanation:** Yeh **file paths** hain. `const string` ka matlab hai ke yeh read-only strings hain jo change nahi hongi. C++ string use ki hai kyunki yeh `char*` se simple hai.
+- `products.dat` - Saare products ka data text format mein store hota hai (har field nayi line par).
+- `admin.dat` - Admin login credentials text format mein.
+- `logs.txt` - Har activity ka record (text format mein append mode mein).
 - `reports.txt` - Generated reports save hoti hain.
 - `backup.dat` - Products data ka backup copy.
 - Sab files `data/` folder mein save hoti hain.
@@ -371,12 +365,12 @@ int main() {
 ```cpp
 bool login() {
     int attempts = 3;
-    char username[30], password[30];
+    string username, password;
 ```
 **Explanation:**
 - `bool` return type - ya toh `true` (success) ya `false` (fail) return karega.
 - `attempts = 3` - User ko 3 mauke milenge sahi password dalne ke.
-- `username` aur `password` arrays mein user ka input store hoga.
+- `username` aur `password` C++ strings mein user ka input store hoga. `string` use kar rahe hain kyunki yeh `char[]` se safe aur easy hai.
 
 ---
 
@@ -389,34 +383,30 @@ bool login() {
 
 ```cpp
         cout << "   Username: ";
-        cin.getline(username, 30);
+        getline(cin, username);
         cout << "   Password: ";
-        cin.getline(password, 30);
+        getline(cin, password);
 ```
 **Explanation:** User se username aur password input lete hain.
-- `cin.getline()` use kiya hai instead of `cin >>` kyunki `getline` spaces bhi leta hai (jaise "Ahmad Mahmood").
-- `30` maximum characters ki limit hai.
+- `getline(cin, string)` use kiya hai instead of `cin >>` kyunki `getline` spaces bhi leta hai (jaise "Ahmad Mahmood").
+- `string` type use karne se koi character limit nahi hai - `char[]` mein buffer overflow ka risk nahi hota.
 
 ---
 
 ```cpp
-        if (strcmp(username, admin.username) == 0 && strcmp(password, admin.password) == 0) {
+        if (username == admin.username && password == admin.password) {
 ```
 **Explanation:** **String comparison** - check karte hain ke user ka input admin ke credentials se match karta hai ya nahi.
-- `strcmp()` 0 return karta hai jab dono strings same hon.
+- `string` type ke saath hum `==` operator direct use kar sakte hain. `strcmp()` ki zaroorat nahi.
 - `&&` ka matlab "AUR" - dono conditions true honi chahiye (username sahi AUR password sahi).
 
 ---
 
 ```cpp
-            string logMsg = "LOGIN SUCCESS - User: ";
-            logMsg += admin.username;
-            writeLog(logMsg.c_str());
+            writeLog("LOGIN SUCCESS - User: " + admin.username);
 ```
-**Explanation:** **Log entry** bana rahe hain.
-- `logMsg` mein message banaya.
-- `+=` se username add kiya message mein.
-- `writeLog()` mein bhejne ke liye `c_str()` use kiya jo C++ string ko C-style string (char*) mein convert karta hai.
+**Explanation:** **Log entry** bana rahe hain. String concatenation (`+`) use karte hain - "LOGIN SUCCESS" string mein admin.username jodte hain.
+- `writeLog()` ab `const string&` leta hai, isliye `c_str()` ki zaroorat nahi.
 
 ---
 
@@ -457,15 +447,15 @@ bool login() {
 
 ```cpp
 void createDefaultAdmin() {
-    ifstream checkFile(ADMIN_FILE, ios::binary);
+    ifstream checkFile(ADMIN_FILE);
     if (checkFile.good()) {
         checkFile.close();
-        return;
+        return; // Admin file already exists
     }
     checkFile.close();
 ```
 **Explanation:**
-- `ifstream` se admin.dat file open karte hain read mode mein.
+- `ifstream` se admin.dat file open karte hain read mode mein (ab `ios::binary` ki zaroorat nahi, text mode mein).
 - `checkFile.good()` check karta hai ke file exist karti hai aur readable hai.
 - Agar file already hai toh `return` kar jao - kuch karne ki zaroorat nahi.
 - Agar file nahi hai (pehli baar program chal raha hai) toh aage badho.
@@ -473,13 +463,13 @@ void createDefaultAdmin() {
 ---
 
 ```cpp
-    strcpy(admin.username, "admin");
-    strcpy(admin.password, "admin123");
+    admin.username = "admin";
+    admin.password = "admin123";
     saveAdmin();
 }
 ```
 **Explanation:**
-- `strcpy()` se "admin" username mein copy kiya aur "admin123" password mein.
+- `=` operator se "admin" username mein assign kiya aur "admin123" password mein. `string` type ke saath `=` direct use kar sakte hain, `strcpy()` ki zaroorat nahi.
 - `saveAdmin()` se admin.dat file mein save kiya.
 
 ---
@@ -488,34 +478,38 @@ void createDefaultAdmin() {
 
 ```cpp
 void saveAdmin() {
-    ofstream file(ADMIN_FILE, ios::binary);
+    ofstream file(ADMIN_FILE);
     if (file.is_open()) {
-        file.write((char*)(&admin), sizeof(Admin));
+        file << admin.username << endl;
+        file << admin.password << endl;
         file.close();
     }
 }
 ```
 **Explanation:**
 - `ofstream` - Output file stream (file mein likhne ke liye).
-- `ios::binary` - Binary mode mein file kholti hai (faster, compact).
-- `file.write()` - Admin struct ko memory se directly file mein likhta hai.
-- `(char*)(&admin)` - Admin struct ka memory address leta hai aur char pointer mein cast karta hai. `write()` ko char* chahiye hota hai.
-- `sizeof(Admin)` - Admin struct ka size bytes mein (30 + 30 = 60 bytes).
+- Text mode mein file kholi (binary mode nahi) - `<<` operator se likhte hain.
+- `file << admin.username << endl;` - Username pehli line mein likho.
+- `file << admin.password << endl;` - Password doosri line mein likho.
+- Yeh binary I/O se zyada simple aur readable hai.
 
 ---
 
 ```cpp
 void loadAdmin() {
-    ifstream file(ADMIN_FILE, ios::binary);
+    ifstream file(ADMIN_FILE);
     if (file.is_open()) {
-        file.read((char*)(&admin), sizeof(Admin));
+        getline(file, admin.username);
+        getline(file, admin.password);
         file.close();
     }
 }
 ```
 **Explanation:**
 - `ifstream` - Input file stream (file se parhne ke liye).
-- `file.read()` - File se data parh kar admin struct mein daalta hai. Same casting technique as saveAdmin().
+- `getline(file, admin.username)` - Pehli line (username) parh kar admin.username mein daalta hai.
+- `getline(file, admin.password)` - Doosri line (password) parh kar admin.password mein daalta hai.
+- Text mode mein parhna binary se zyada simple hai.
 
 ---
 
@@ -523,19 +517,28 @@ void loadAdmin() {
 
 ```cpp
 void saveData() {
-    ofstream file(PRODUCTS_FILE, ios::binary);
+    ofstream file(PRODUCTS_FILE);
     if (file.is_open()) {
-        file.write((char*)(&productCount), sizeof(int));
-        file.write((char*)(products), sizeof(Product) * productCount);
+        // First line: total number of products
+        file << productCount << endl;
+        for (int i = 0; i < productCount; i++) {
+            file << products[i].id << endl;
+            file << products[i].name << endl;
+            file << products[i].category << endl;
+            file << products[i].supplier << endl;
+            file << products[i].quantity << endl;
+            file << products[i].purchasePrice << endl;
+            file << products[i].sellingPrice << endl;
+        }
         file.close();
     }
 }
 ```
 **Explanation:**
-- Pehle `productCount` save karte hain (kitne products hain - yeh integer hai, 4 bytes).
-- Phir `products` array save karte hain - sab products ek saath.
-- `sizeof(Product) * productCount` - Ek product ka size × kitne products hain = total bytes.
-- **PF Concept:** Binary file handling - data as-is memory se file mein jaata hai.
+- Text mode mein file kholi - `<<` operator use karte hain.
+- Pehle `productCount` save karte hain (kitne products hain).
+- Phir har product ke 7 fields ko line by line file mein likhte hain.
+- **PF Concept:** Text file handling - `<<` operator se directly likhna simple hai.
 
 ---
 
@@ -543,11 +546,21 @@ void saveData() {
 
 ```cpp
 void loadData() {
-    ifstream file(PRODUCTS_FILE, ios::binary);
+    ifstream file(PRODUCTS_FILE);
     if (file.is_open()) {
-        file.read((char*)(&productCount), sizeof(int));
+        file >> productCount;
         if (productCount > 0 && productCount <= MAX_PRODUCTS) {
-            file.read((char*)(products), sizeof(Product) * productCount);
+            for (int i = 0; i < productCount; i++) {
+                file >> products[i].id;
+                file.ignore(); // skip the newline after id
+                getline(file, products[i].name);
+                getline(file, products[i].category);
+                getline(file, products[i].supplier);
+                file >> products[i].quantity;
+                file >> products[i].purchasePrice;
+                file >> products[i].sellingPrice;
+                file.ignore(); // skip the newline after selling price
+            }
         } else {
             productCount = 0;
         }
@@ -558,16 +571,18 @@ void loadData() {
 }
 ```
 **Explanation:**
-- Pehle `productCount` parhte hain - kitne products the.
-- Safety check: `productCount > 0 && productCount <= MAX_PRODUCTS` - agar valid number hai toh products array load karo.
-- Agar file nahi hai (pehli baar) toh `productCount = 0` set karo.
+- Text mode mein file kholi.
+- Pehle `file >> productCount` se count parhte hain.
+- Phir loop mein har product ke fields parhte hain: numbers `>>` se aur strings `getline()` se.
+- `file.ignore()` newline character hata deta hai jab `>>` ke baad `getline()` use karte hain.
+- Safety check: `productCount > 0 && productCount <= MAX_PRODUCTS` - agar valid number hai toh products load karo.
 
 ---
 
 ### 3.9 writeLog() - Activity Logger
 
 ```cpp
-void writeLog(const char* message) {
+void writeLog(const string& message) {
     ofstream file(LOGS_FILE, ios::app);
     if (file.is_open()) {
         file << "[" << getCurrentDateTime() << "] " << message << endl;
@@ -576,6 +591,7 @@ void writeLog(const char* message) {
 }
 ```
 **Explanation:**
+- `const string&` - Function `string` leta hai (C-style string nahi). `&` ka matlab reference hai - copy nahi hoti, original string use hoti hai.
 - `ios::app` - **Append mode**. File ke end mein likhega, purana data delete nahi hoga.
 - Har log entry ka format: `[Date Time] Message`
 - Jaise: `[Thu Jul 16 10:30:45 2026] PRODUCT ADDED - ID: 1001, Name: Dell Laptop`
@@ -657,11 +673,12 @@ void addProduct() {
 ---
 
 ```cpp
-    cin.ignore(10000, '\n');
+    cin.ignore(10000, '\n'); // Clear the newline after reading id
+
     cout << "   Enter Product Name: ";
-    cin.getline(p.name, 50);
+    getline(cin, p.name);
 ```
-**Explanation:** `cin >> p.id` ke baad buffer mein newline character reh jata hai. `cin.ignore()` se usko hataate hain taake `getline()` sahi se kaam kare.
+**Explanation:** `cin >> p.id` ke baad buffer mein newline character reh jata hai. `cin.ignore()` se usko hataate hain taake `getline()` sahi se kaam kare. `getline(cin, p.name)` C++ string parhta hai - buffer overflow ka koi risk nahi.
 
 ---
 
@@ -691,14 +708,11 @@ void addProduct() {
 ---
 
 ```cpp
-    char logMsg[200];
-    sprintf(logMsg, "PRODUCT ADDED - ID: %d, Name: %s", p.id, p.name);
-    writeLog(logMsg);
+    writeLog("PRODUCT ADDED - ID: " + to_string(p.id) + ", Name: " + p.name);
 ```
 **Explanation:** **Log entry** bana rahe hain:
-- `sprintf()` - Formatted string banata hai (jaise `printf()` lekin screen ki jagah string mein).
-- `%d` - Integer ke liye (ID).
-- `%s` - String ke liye (Name).
+- `to_string(p.id)` - Integer `p.id` ko string mein convert karta hai. Jaise 1001 → "1001".
+- `+` operator se saari strings jod dete hain. `sprintf()` ki zaroorat nahi.
 - Result: "PRODUCT ADDED - ID: 1001, Name: Dell Laptop"
 
 ---
@@ -759,12 +773,12 @@ void addProduct() {
 ---
 
 ```cpp
-        if (strstr(products[i].name, searchName) != NULL) {
+        if (products[i].name.find(searchName) != string::npos) {
 ```
-**Explanation:** `strstr()` - String ke andar string dhundta hai.
+**Explanation:** `string::find()` - String ke andar string dhundta hai.
 - Agar "Laptop" search karo aur product ka naam "Dell Laptop" hai toh match milega.
-- `NULL` return karta hai agar match na mile.
-- **PF Concept:** Partial string matching.
+- `string::npos` return karta hai agar match na mile (npos = not found).
+- **PF Concept:** Partial string matching using `string::find()`.
 
 ---
 
@@ -880,7 +894,7 @@ void addProduct() {
     if (sortChoice == 1) {
         for (int i = 0; i < productCount - 1; i++) {
             for (int j = 0; j < productCount - i - 1; j++) {
-                if (strcmp(products[j].name, products[j + 1].name) > 0) {
+                if (products[j].name > products[j + 1].name) {
                     temp = products[j];
                     products[j] = products[j + 1];
                     products[j + 1] = temp;
@@ -908,7 +922,7 @@ products[j+1] = temp;        // temp (pehla) doosre ki jagah
 - Pass 1: Compare C>A → swap → `[A, C, B]`. Compare C>B → swap → `[A, B, C]`
 - Result: `[A, B, C]` ✓
 
-**strcmp() > 0:** Pehli string alphabetically badi hai doosri se (jaise "Dell" > "Apple").
+**String Comparison:** `string` type ke saath hum `>` operator use kar sakte hain. `strcmp()` ki zaroorat nahi. Yeh alphabetically compare karta hai (jaise "Dell" > "Apple").
 
 ---
 
@@ -936,16 +950,20 @@ products[j+1] = temp;        // temp (pehla) doosre ki jagah
 ### 3.20 backupData() - Data Backup
 
 ```cpp
+    // Save current data first
     saveData();
-    ifstream source(PRODUCTS_FILE, ios::binary);
-    ofstream dest(BACKUP_FILE, ios::binary);
-    dest << source.rdbuf();
+    ifstream source(PRODUCTS_FILE);
+    ofstream dest(BACKUP_FILE);
+    string line;
+    while (getline(source, line)) {
+        dest << line << endl;
+    }
 ```
 **Explanation:**
 - Pehle current data save karo (`saveData()`).
 - `source` products.dat file kholti hai read ke liye.
 - `dest` backup.dat file kholti hai write ke liye.
-- `dest << source.rdbuf()` - Poori file ko ek hi line mein copy kar deta hai. Simple aur fast.
+- `while (getline(source, line))` - Har line parho, phir `dest << line << endl` se doosri file mein likho. Yeh simple line-by-line copy hai.
 
 ---
 
@@ -985,18 +1003,18 @@ int getMenuChoice() {
 | Concept | Kahan Use Hua |
 |---------|--------------|
 | **Variables** | productCount, choice, id, qty, etc. |
-| **Data Types** | int (ID, quantity), char[] (name), double (price) |
+| **Data Types** | int (ID, quantity), string (name), double (price) |
 | **Arrays** | products[MAX_PRODUCTS] - 100 products store |
 | **Structures** | Product struct, Admin struct |
 | **Functions** | 20+ functions - modular code |
 | **Loops** | for (arrays iterate), while (validation), do-while (menu) |
 | **If-Else** | Conditions check, login validation |
 | **Switch** | Menu choice handling |
-| **File Handling** | Binary (products.dat, admin.dat), Text (logs.txt, reports.txt) |
+| **File Handling** | Text files (products.dat, admin.dat, logs.txt, reports.txt) - <<, >>, getline |
 | **Searching** | Linear search (findProductIndex, isDuplicateID) |
 | **Sorting** | Bubble sort (sortProducts) |
 | **Input Validation** | Negative numbers check, duplicate ID check |
-| **String Operations** | strcmp, strcpy, strstr |
+| **String Operations** | string type, == comparison, + concatenation, .find() search |
 | **Header Files** | product.h, utils.h - code organization |
 | **Global Variables** | products[], productCount |
 | **Constants** | MAX_PRODUCTS, file paths |

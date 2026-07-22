@@ -53,9 +53,9 @@ This header file defines the Product and Admin structures. Structures allow us t
 | Variable | Type | Purpose |
 |----------|------|---------|
 | `id` | int | Unique product ID |
-| `name` | char[50] | Product ka naam (50 characters tak) |
-| `category` | char[30] | Product category (Electronics, Grocery, etc.) |
-| `supplier` | char[50] | Supplier company ka naam |
+| `name` | string | Product ka naam |
+| `category` | string | Product category (Electronics, Grocery, etc.) |
+| `supplier` | string | Supplier company ka naam |
 | `quantity` | int | Kitne products stock mein hain |
 | `purchasePrice` | double | Kharidne ki price |
 | `sellingPrice` | double | Bechne ki price |
