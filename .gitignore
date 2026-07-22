@@ -1,0 +1,13 @@
+# Build artifacts
+src/*.o
+src/*.exe
+src/*.layout
+src/*.dev
+
+# Data files (auto-generated)
+src/data/*
+!src/data/.gitkeep
+
+# IDE files
+*.swp
+*.swo
