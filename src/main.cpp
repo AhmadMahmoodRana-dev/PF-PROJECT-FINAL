@@ -1,18 +1,29 @@
-#include "product.h"
-#include "utils.h"
+#include <iostream>
+#include <fstream>
+#include <string>
 
-Product products[MAX_PRODUCTS];
+using namespace std;
+
+const int MAX_PRODUCTS = 100;
+
+int ids[MAX_PRODUCTS];
+string names[MAX_PRODUCTS];
+string categories[MAX_PRODUCTS];
+string suppliers[MAX_PRODUCTS];
+int quantities[MAX_PRODUCTS];
+double purchasePrices[MAX_PRODUCTS];
+double sellingPrices[MAX_PRODUCTS];
 int productCount = 0;
-Admin admin;
 
-// File paths for data storage
+string adminUser = "";
+string adminPass = "";
+
 const string PRODUCTS_FILE = "data/products.dat";
 const string ADMIN_FILE = "data/admin.dat";
 const string LOGS_FILE = "data/logs.txt";
 const string REPORTS_FILE = "data/reports.txt";
 const string BACKUP_FILE = "data/backup.dat";
 
-// Function declarations
 void showMenu();
 int getMenuChoice();
 void addProduct();
@@ -37,6 +48,28 @@ void writeLog(const string& message);
 bool isDuplicateID(int id);
 int findProductIndex(int id);
 
+void clearScreen() {
+    for (int i = 0; i < 25; i++) {
+        cout << endl;
+    }
+}
+
+void pause() {
+    cout << "\nPress Enter to continue...";
+    cin.get();
+}
+
+void printLine(int length) {
+    for (int i = 0; i < length; i++) {
+        cout << "=";
+    }
+    cout << endl;
+}
+
+string getDateTime() {
+    return "---";
+}
+
 int main() {
     clearScreen();
 
@@ -51,12 +84,10 @@ int main() {
 
     pause();
 
-    // Load saved data and admin credentials from files
     loadData();
     createDefaultAdmin();
     loadAdmin();
 
-    // Authenticate the admin user
     if (!login()) {
         cout << "\n   Login failed! Maximum attempts exceeded." << endl;
         cout << "   Exiting system..." << endl;
@@ -66,7 +97,6 @@ int main() {
 
     int choice;
 
-    // Main menu loop - keeps showing menu until user chooses exit (12)
     do {
         showMenu();
         choice = getMenuChoice();
@@ -106,7 +136,6 @@ int main() {
                 backupData();
                 break;
             case 12:
-                // Save data and exit
                 saveData();
                 writeLog("LOGOUT - User exited the system");
                 clearScreen();
@@ -127,7 +156,6 @@ int main() {
     return 0;
 }
 
-// Authenticates the admin with username and password (3 attempts)
 bool login() {
     int attempts = 3;
     string username, password;
@@ -146,10 +174,9 @@ bool login() {
         cout << "   Password: ";
         getline(cin, password);
 
-        // Compare entered credentials with stored admin data
-        if (username == admin.username && password == admin.password) {
-            cout << "\n   Login Successful! Welcome, " << admin.username << "!" << endl;
-            writeLog("LOGIN SUCCESS - User: " + admin.username);
+        if (username == adminUser && password == adminPass) {
+            cout << "\n   Login Successful! Welcome, " << adminUser << "!" << endl;
+            writeLog("LOGIN SUCCESS - User: " + adminUser);
             pause();
             return true;
         } else {
@@ -164,55 +191,49 @@ bool login() {
     return false;
 }
 
-// Creates a default admin account if no admin file exists
 void createDefaultAdmin() {
     ifstream checkFile(ADMIN_FILE);
     if (checkFile.good()) {
         checkFile.close();
-        return; // Admin file already exists
+        return;
     }
     checkFile.close();
 
-    // Set default credentials
-    admin.username = "admin";
-    admin.password = "admin123";
+    adminUser = "admin";
+    adminPass = "admin123";
     saveAdmin();
 }
 
-// Saves admin credentials to file (text format)
 void saveAdmin() {
     ofstream file(ADMIN_FILE);
     if (file.is_open()) {
-        file << admin.username << endl;
-        file << admin.password << endl;
+        file << adminUser << endl;
+        file << adminPass << endl;
         file.close();
     }
 }
 
-// Loads admin credentials from file
 void loadAdmin() {
     ifstream file(ADMIN_FILE);
     if (file.is_open()) {
-        getline(file, admin.username);
-        getline(file, admin.password);
+        getline(file, adminUser);
+        getline(file, adminPass);
         file.close();
     }
 }
 
-// Saves all product data to file (text format, one field per line)
 void saveData() {
     ofstream file(PRODUCTS_FILE);
     if (file.is_open()) {
-        // First line: total number of products
         file << productCount << endl;
         for (int i = 0; i < productCount; i++) {
-            file << products[i].id << endl;
-            file << products[i].name << endl;
-            file << products[i].category << endl;
-            file << products[i].supplier << endl;
-            file << products[i].quantity << endl;
-            file << products[i].purchasePrice << endl;
-            file << products[i].sellingPrice << endl;
+            file << ids[i] << endl;
+            file << names[i] << endl;
+            file << categories[i] << endl;
+            file << suppliers[i] << endl;
+            file << quantities[i] << endl;
+            file << purchasePrices[i] << endl;
+            file << sellingPrices[i] << endl;
         }
         file.close();
     } else {
@@ -220,23 +241,21 @@ void saveData() {
     }
 }
 
-// Loads all product data from file
 void loadData() {
     ifstream file(PRODUCTS_FILE);
     if (file.is_open()) {
         file >> productCount;
-        // Only read products if the count is valid
         if (productCount > 0 && productCount <= MAX_PRODUCTS) {
             for (int i = 0; i < productCount; i++) {
-                file >> products[i].id;
-                file.ignore(); // skip the newline after id
-                getline(file, products[i].name);
-                getline(file, products[i].category);
-                getline(file, products[i].supplier);
-                file >> products[i].quantity;
-                file >> products[i].purchasePrice;
-                file >> products[i].sellingPrice;
-                file.ignore(); // skip the newline after selling price
+                file >> ids[i];
+                file.ignore();
+                getline(file, names[i]);
+                getline(file, categories[i]);
+                getline(file, suppliers[i]);
+                file >> quantities[i];
+                file >> purchasePrices[i];
+                file >> sellingPrices[i];
+                file.ignore();
             }
         } else {
             productCount = 0;
@@ -247,36 +266,32 @@ void loadData() {
     }
 }
 
-// Writes a log entry with timestamp to the log file
 void writeLog(const string& message) {
     ofstream file(LOGS_FILE, ios::app);
     if (file.is_open()) {
-        file << "[" << getCurrentDateTime() << "] " << message << endl;
+        file << "[" << getDateTime() << "] " << message << endl;
         file.close();
     }
 }
 
-// Checks if a product with the given ID already exists
 bool isDuplicateID(int id) {
     for (int i = 0; i < productCount; i++) {
-        if (products[i].id == id) {
+        if (ids[i] == id) {
             return true;
         }
     }
     return false;
 }
 
-// Finds the index of a product by its ID, returns -1 if not found
 int findProductIndex(int id) {
     for (int i = 0; i < productCount; i++) {
-        if (products[i].id == id) {
+        if (ids[i] == id) {
             return i;
         }
     }
     return -1;
 }
 
-// Adds a new product to the inventory
 void addProduct() {
     clearScreen();
     cout << "\n";
@@ -284,75 +299,73 @@ void addProduct() {
     cout << "      ADD NEW PRODUCT" << endl;
     printLine(50);
 
-    // Check if we have space for more products
     if (productCount >= MAX_PRODUCTS) {
         cout << "\n   ERROR: Product limit reached! Cannot add more products." << endl;
         pause();
         return;
     }
 
-    Product p;
-
+    int newId;
     cout << "\n   Enter Product ID: ";
-    cin >> p.id;
+    cin >> newId;
 
-    // Check if a product with this ID already exists
-    if (isDuplicateID(p.id)) {
-        cout << "\n   ERROR: Product ID " << p.id << " already exists!" << endl;
+    if (isDuplicateID(newId)) {
+        cout << "\n   ERROR: Product ID " << newId << " already exists!" << endl;
         cin.clear();
         cin.ignore(10000, '\n');
         pause();
         return;
     }
 
-    cin.ignore(10000, '\n'); // Clear the newline after reading id
+    cin.ignore(10000, '\n');
+
+    int pos = productCount;
+
+    ids[pos] = newId;
 
     cout << "   Enter Product Name: ";
-    getline(cin, p.name);
+    getline(cin, names[pos]);
 
     cout << "   Enter Category (e.g., Electronics, Grocery): ";
-    getline(cin, p.category);
+    getline(cin, categories[pos]);
 
     cout << "   Enter Supplier Name: ";
-    getline(cin, p.supplier);
+    getline(cin, suppliers[pos]);
 
     cout << "   Enter Quantity: ";
-    cin >> p.quantity;
-    while (p.quantity < 0) {
+    cin >> quantities[pos];
+    while (quantities[pos] < 0) {
         cout << "   Quantity cannot be negative. Enter again: ";
-        cin >> p.quantity;
+        cin >> quantities[pos];
     }
 
     cout << "   Enter Purchase Price (Rs.): ";
-    cin >> p.purchasePrice;
-    while (p.purchasePrice < 0) {
+    cin >> purchasePrices[pos];
+    while (purchasePrices[pos] < 0) {
         cout << "   Price cannot be negative. Enter again: ";
-        cin >> p.purchasePrice;
+        cin >> purchasePrices[pos];
     }
 
     cout << "   Enter Selling Price (Rs.): ";
-    cin >> p.sellingPrice;
-    while (p.sellingPrice < 0) {
+    cin >> sellingPrices[pos];
+    while (sellingPrices[pos] < 0) {
         cout << "   Price cannot be negative. Enter again: ";
-        cin >> p.sellingPrice;
+        cin >> sellingPrices[pos];
     }
 
     cin.ignore(10000, '\n');
 
-    // Add product to array and increment count
-    products[productCount] = p;
     productCount++;
 
     saveData();
 
-    writeLog("PRODUCT ADDED - ID: " + to_string(p.id) + ", Name: " + p.name);
+    writeLog("PRODUCT ADDED - ID: " + to_string(ids[pos]) + ", Name: " + names[pos]);
 
     cout << "\n   Product added successfully!" << endl;
     printLine(50);
     pause();
 }
 
-// Displays all products in a table format
 void viewProducts() {
     clearScreen();
     cout << "\n";
@@ -367,31 +380,24 @@ void viewProducts() {
     }
 
     cout << "\n";
-    cout << left;
-    cout << "   " << setw(6) << "ID"
-         << setw(20) << "Name"
-         << setw(15) << "Category"
-         << setw(10) << "Qty"
-         << setw(12) << "Purch.Price"
-         << setw(12) << "Sell.Price" << endl;
-    printLine(75);
+    cout << "   ID\t\tName\t\t\tCategory\tQty\tPurch.Price\tSell.Price" << endl;
+    printLine(85);
 
     for (int i = 0; i < productCount; i++) {
-        cout << "   " << setw(6) << products[i].id
-             << setw(20) << products[i].name
-             << setw(15) << products[i].category
-             << setw(10) << products[i].quantity
-             << "Rs." << setw(9) << products[i].purchasePrice
-             << "Rs." << setw(9) << products[i].sellingPrice << endl;
+        cout << "   " << ids[i]
+             << "\t\t" << names[i]
+             << "\t\t" << categories[i]
+             << "\t" << quantities[i]
+             << "\tRs." << purchasePrices[i]
+             << "\t\tRs." << sellingPrices[i] << endl;
     }
 
-    printLine(75);
+    printLine(85);
     cout << "   Total Products: " << productCount << endl;
 
     pause();
 }
 
-// Searches for a product by ID or name
 void searchProduct() {
     clearScreen();
     cout << "\n";
@@ -413,7 +419,6 @@ void searchProduct() {
     cin >> searchChoice;
     cin.ignore(10000, '\n');
 
-    // Search by product ID
     if (searchChoice == 1) {
         int searchID;
         cout << "\n   Enter Product ID to search: ";
@@ -424,19 +429,18 @@ void searchProduct() {
         if (index != -1) {
             cout << "\n   Product Found!" << endl;
             printLine(40);
-            cout << "   ID:            " << products[index].id << endl;
-            cout << "   Name:          " << products[index].name << endl;
-            cout << "   Category:      " << products[index].category << endl;
-            cout << "   Supplier:      " << products[index].supplier << endl;
-            cout << "   Quantity:      " << products[index].quantity << endl;
-            cout << "   Purchase Price: Rs." << products[index].purchasePrice << endl;
-            cout << "   Selling Price:  Rs." << products[index].sellingPrice << endl;
+            cout << "   ID:            " << ids[index] << endl;
+            cout << "   Name:          " << names[index] << endl;
+            cout << "   Category:      " << categories[index] << endl;
+            cout << "   Supplier:      " << suppliers[index] << endl;
+            cout << "   Quantity:      " << quantities[index] << endl;
+            cout << "   Purchase Price: Rs." << purchasePrices[index] << endl;
+            cout << "   Selling Price:  Rs." << sellingPrices[index] << endl;
             printLine(40);
         } else {
             cout << "\n   Product with ID " << searchID << " not found!" << endl;
         }
 
-    // Search by product name (partial match)
     } else if (searchChoice == 2) {
         string searchName;
         cout << "\n   Enter Product Name to search: ";
@@ -444,33 +448,26 @@ void searchProduct() {
 
         bool found = false;
         for (int i = 0; i < productCount; i++) {
-            // Check if search term appears anywhere in the product name
-            if (products[i].name.find(searchName) != string::npos) {
+            if (names[i].find(searchName) != string::npos) {
                 if (!found) {
                     cout << "\n   Matching Products:" << endl;
-                    printLine(75);
-                    cout << left;
-                    cout << "   " << setw(6) << "ID"
-                         << setw(20) << "Name"
-                         << setw(15) << "Category"
-                         << setw(10) << "Qty"
-                         << setw(12) << "Purch.Price"
-                         << setw(12) << "Sell.Price" << endl;
-                    printLine(75);
+                    printLine(85);
+                    cout << "   ID\t\tName\t\t\tCategory\tQty\tPurch.Price\tSell.Price" << endl;
+                    printLine(85);
                     found = true;
                 }
-                cout << "   " << setw(6) << products[i].id
-                     << setw(20) << products[i].name
-                     << setw(15) << products[i].category
-                     << setw(10) << products[i].quantity
-                     << "Rs." << setw(9) << products[i].purchasePrice
-                     << "Rs." << setw(9) << products[i].sellingPrice << endl;
+                cout << "   " << ids[i]
+                     << "\t\t" << names[i]
+                     << "\t\t" << categories[i]
+                     << "\t" << quantities[i]
+                     << "\tRs." << purchasePrices[i]
+                     << "\t\tRs." << sellingPrices[i] << endl;
             }
         }
         if (!found) {
             cout << "\n   No products found matching '" << searchName << "'!" << endl;
         } else {
-            printLine(75);
+            printLine(85);
         }
     } else {
         cout << "\n   Invalid search option!" << endl;
@@ -479,7 +476,6 @@ void searchProduct() {
     pause();
 }
 
-// Updates a specific field of an existing product
 void updateProduct() {
     clearScreen();
     cout << "\n";
@@ -505,16 +501,15 @@ void updateProduct() {
         return;
     }
 
-    // Display current product details
     cout << "\n   Current Product Details:" << endl;
     printLine(40);
-    cout << "   ID:            " << products[index].id << endl;
-    cout << "   Name:          " << products[index].name << endl;
-    cout << "   Category:      " << products[index].category << endl;
-    cout << "   Supplier:      " << products[index].supplier << endl;
-    cout << "   Quantity:      " << products[index].quantity << endl;
-    cout << "   Purchase Price: Rs." << products[index].purchasePrice << endl;
-    cout << "   Selling Price:  Rs." << products[index].sellingPrice << endl;
+    cout << "   ID:            " << ids[index] << endl;
+    cout << "   Name:          " << names[index] << endl;
+    cout << "   Category:      " << categories[index] << endl;
+    cout << "   Supplier:      " << suppliers[index] << endl;
+    cout << "   Quantity:      " << quantities[index] << endl;
+    cout << "   Purchase Price: Rs." << purchasePrices[index] << endl;
+    cout << "   Selling Price:  Rs." << sellingPrices[index] << endl;
     printLine(40);
 
     int field;
@@ -529,33 +524,32 @@ void updateProduct() {
     cin >> field;
     cin.ignore(10000, '\n');
 
-    // Update the chosen field
     switch (field) {
         case 1:
             cout << "   Enter new Name: ";
-            getline(cin, products[index].name);
+            getline(cin, names[index]);
             break;
         case 2:
             cout << "   Enter new Category: ";
-            getline(cin, products[index].category);
+            getline(cin, categories[index]);
             break;
         case 3:
             cout << "   Enter new Supplier: ";
-            getline(cin, products[index].supplier);
+            getline(cin, suppliers[index]);
             break;
         case 4:
             cout << "   Enter new Quantity: ";
-            cin >> products[index].quantity;
+            cin >> quantities[index];
             cin.ignore(10000, '\n');
             break;
         case 5:
             cout << "   Enter new Purchase Price: ";
-            cin >> products[index].purchasePrice;
+            cin >> purchasePrices[index];
             cin.ignore(10000, '\n');
             break;
         case 6:
             cout << "   Enter new Selling Price: ";
-            cin >> products[index].sellingPrice;
+            cin >> sellingPrices[index];
             cin.ignore(10000, '\n');
             break;
         default:
@@ -566,14 +560,13 @@ void updateProduct() {
 
     saveData();
 
-    writeLog("PRODUCT UPDATED - ID: " + to_string(products[index].id) +
+    writeLog("PRODUCT UPDATED - ID: " + to_string(ids[index]) +
         ", Field: " + to_string(field));
 
     cout << "\n   Product updated successfully!" << endl;
     pause();
 }
 
-// Deletes a product from the inventory
 void deleteProduct() {
     clearScreen();
     cout << "\n";
@@ -599,16 +592,15 @@ void deleteProduct() {
         return;
     }
 
-    // Show product details before deletion
     cout << "\n   Product Details:" << endl;
     printLine(40);
-    cout << "   ID:            " << products[index].id << endl;
-    cout << "   Name:          " << products[index].name << endl;
-    cout << "   Category:      " << products[index].category << endl;
-    cout << "   Supplier:      " << products[index].supplier << endl;
-    cout << "   Quantity:      " << products[index].quantity << endl;
-    cout << "   Purchase Price: Rs." << products[index].purchasePrice << endl;
-    cout << "   Selling Price:  Rs." << products[index].sellingPrice << endl;
+    cout << "   ID:            " << ids[index] << endl;
+    cout << "   Name:          " << names[index] << endl;
+    cout << "   Category:      " << categories[index] << endl;
+    cout << "   Supplier:      " << suppliers[index] << endl;
+    cout << "   Quantity:      " << quantities[index] << endl;
+    cout << "   Purchase Price: Rs." << purchasePrices[index] << endl;
+    cout << "   Selling Price:  Rs." << sellingPrices[index] << endl;
     printLine(40);
 
     char confirm;
@@ -617,12 +609,17 @@ void deleteProduct() {
     cin.ignore(10000, '\n');
 
     if (confirm == 'y' || confirm == 'Y') {
-        string logMsg = "PRODUCT DELETED - ID: " + to_string(products[index].id) +
-            ", Name: " + products[index].name;
+        string logMsg = "PRODUCT DELETED - ID: " + to_string(ids[index]) +
+            ", Name: " + names[index];
 
-        // Shift all products after index one position left
         for (int i = index; i < productCount - 1; i++) {
-            products[i] = products[i + 1];
+            ids[i] = ids[i + 1];
+            names[i] = names[i + 1];
+            categories[i] = categories[i + 1];
+            suppliers[i] = suppliers[i + 1];
+            quantities[i] = quantities[i + 1];
+            purchasePrices[i] = purchasePrices[i + 1];
+            sellingPrices[i] = sellingPrices[i + 1];
         }
         productCount--;
 
@@ -637,7 +634,6 @@ void deleteProduct() {
     pause();
 }
 
-// Adds stock (increases quantity) for a product
 void stockIn() {
     clearScreen();
     cout << "\n";
@@ -663,7 +659,7 @@ void stockIn() {
         return;
     }
 
-    cout << "   Current Stock of '" << products[index].name << "': " << products[index].quantity << endl;
+    cout << "   Current Stock of '" << names[index] << "': " << quantities[index] << endl;
     cout << "   Enter quantity to add: ";
     cin >> qty;
     cin.ignore(10000, '\n');
@@ -674,20 +670,19 @@ void stockIn() {
         cin.ignore(10000, '\n');
     }
 
-    products[index].quantity += qty;
+    quantities[index] += qty;
     saveData();
 
-    writeLog("STOCK IN - ID: " + to_string(products[index].id) +
-        ", Name: " + products[index].name +
+    writeLog("STOCK IN - ID: " + to_string(ids[index]) +
+        ", Name: " + names[index] +
         ", Quantity Added: " + to_string(qty) +
-        ", New Stock: " + to_string(products[index].quantity));
+        ", New Stock: " + to_string(quantities[index]));
 
     cout << "\n   Stock updated successfully!" << endl;
-    cout << "   New Stock of '" << products[index].name << "': " << products[index].quantity << endl;
+    cout << "   New Stock of '" << names[index] << "': " << quantities[index] << endl;
     pause();
 }
 
-// Removes stock (decreases quantity) for a product
 void stockOut() {
     clearScreen();
     cout << "\n";
@@ -713,7 +708,7 @@ void stockOut() {
         return;
     }
 
-    cout << "   Current Stock of '" << products[index].name << "': " << products[index].quantity << endl;
+    cout << "   Current Stock of '" << names[index] << "': " << quantities[index] << endl;
     cout << "   Enter quantity to remove: ";
     cin >> qty;
     cin.ignore(10000, '\n');
@@ -724,27 +719,25 @@ void stockOut() {
         cin.ignore(10000, '\n');
     }
 
-    // Check if there is enough stock to remove
-    if (qty > products[index].quantity) {
-        cout << "\n   ERROR: Not enough stock! Available: " << products[index].quantity << endl;
+    if (qty > quantities[index]) {
+        cout << "\n   ERROR: Not enough stock! Available: " << quantities[index] << endl;
         pause();
         return;
     }
 
-    products[index].quantity -= qty;
+    quantities[index] -= qty;
     saveData();
 
-    writeLog("STOCK OUT - ID: " + to_string(products[index].id) +
-        ", Name: " + products[index].name +
+    writeLog("STOCK OUT - ID: " + to_string(ids[index]) +
+        ", Name: " + names[index] +
         ", Quantity Removed: " + to_string(qty) +
-        ", Remaining: " + to_string(products[index].quantity));
+        ", Remaining: " + to_string(quantities[index]));
 
     cout << "\n   Stock updated successfully!" << endl;
-    cout << "   Remaining Stock of '" << products[index].name << "': " << products[index].quantity << endl;
+    cout << "   Remaining Stock of '" << names[index] << "': " << quantities[index] << endl;
     pause();
 }
 
-// Generates and displays different types of reports (also saves to file)
 void generateReport() {
     clearScreen();
     cout << "\n";
@@ -773,7 +766,6 @@ void generateReport() {
 
     ofstream reportFile(REPORTS_FILE);
 
-    // Full Inventory Report
     if (reportType == 1) {
         cout << "      FULL INVENTORY REPORT" << endl;
         printLine(50);
@@ -781,22 +773,20 @@ void generateReport() {
         int totalItems = 0;
         double totalValue = 0;
 
-        // Calculate totals
         for (int i = 0; i < productCount; i++) {
-            totalItems += products[i].quantity;
-            totalValue += products[i].quantity * products[i].sellingPrice;
+            totalItems += quantities[i];
+            totalValue += quantities[i] * sellingPrices[i];
         }
 
-        cout << "\n   Date: " << getCurrentDateTime() << endl;
+        cout << "\n   Date: " << getDateTime() << endl;
         cout << "   Total Products: " << productCount << endl;
         cout << "   Total Items in Stock: " << totalItems << endl;
         cout << "   Total Inventory Value: Rs." << totalValue << endl;
 
-        // Write report to file
         if (reportFile.is_open()) {
             reportFile << "==============================================\n";
             reportFile << "        INVENTORY REPORT\n";
-            reportFile << "        Generated: " << getCurrentDateTime() << "\n";
+            reportFile << "        Generated: " << getDateTime() << "\n";
             reportFile << "==============================================\n\n";
             reportFile << "Total Products: " << productCount << "\n";
             reportFile << "Total Items in Stock: " << totalItems << "\n";
@@ -804,12 +794,12 @@ void generateReport() {
             reportFile << "--- ALL PRODUCTS ---\n\n";
 
             for (int i = 0; i < productCount; i++) {
-                reportFile << "ID: " << products[i].id
-                           << " | " << products[i].name
-                           << " | Category: " << products[i].category
-                           << " | Qty: " << products[i].quantity
-                           << " | Purchase: Rs." << products[i].purchasePrice
-                           << " | Selling: Rs." << products[i].sellingPrice << "\n";
+                reportFile << "ID: " << ids[i]
+                           << " | " << names[i]
+                           << " | Category: " << categories[i]
+                           << " | Qty: " << quantities[i]
+                           << " | Purchase: Rs." << purchasePrices[i]
+                           << " | Selling: Rs." << sellingPrices[i] << "\n";
             }
 
             reportFile << "\n==============================================\n";
@@ -818,51 +808,43 @@ void generateReport() {
             reportFile.close();
         }
 
-        // Display all products on screen
         cout << "\n   Products:" << endl;
-        cout << left;
-        cout << "   " << setw(6) << "ID"
-             << setw(20) << "Name"
-             << setw(15) << "Category"
-             << setw(10) << "Qty"
-             << setw(12) << "Purch.Price"
-             << setw(12) << "Sell.Price" << endl;
-        printLine(75);
+        cout << "   ID\t\tName\t\t\tCategory\tQty\tPurch.Price\tSell.Price" << endl;
+        printLine(85);
 
         for (int i = 0; i < productCount; i++) {
-            cout << "   " << setw(6) << products[i].id
-                 << setw(20) << products[i].name
-                 << setw(15) << products[i].category
-                 << setw(10) << products[i].quantity
-                 << "Rs." << setw(9) << products[i].purchasePrice
-                 << "Rs." << setw(9) << products[i].sellingPrice << endl;
+            cout << "   " << ids[i]
+                 << "\t\t" << names[i]
+                 << "\t\t" << categories[i]
+                 << "\t" << quantities[i]
+                 << "\tRs." << purchasePrices[i]
+                 << "\t\tRs." << sellingPrices[i] << endl;
         }
-        printLine(75);
+        printLine(85);
 
-    // Low Stock Report (quantity between 1 and 4)
     } else if (reportType == 2) {
         cout << "      LOW STOCK REPORT (Qty < 5)" << endl;
         printLine(50);
-        cout << "\n   Date: " << getCurrentDateTime() << endl;
+        cout << "\n   Date: " << getDateTime() << endl;
 
         int lowCount = 0;
 
         if (reportFile.is_open()) {
             reportFile << "==============================================\n";
             reportFile << "        LOW STOCK REPORT\n";
-            reportFile << "        Generated: " << getCurrentDateTime() << "\n";
+            reportFile << "        Generated: " << getDateTime() << "\n";
             reportFile << "==============================================\n\n";
         }
 
         for (int i = 0; i < productCount; i++) {
-            if (products[i].quantity > 0 && products[i].quantity < 5) {
-                cout << "   [!] ID: " << products[i].id
-                     << " | " << products[i].name
-                     << " | Qty: " << products[i].quantity << endl;
+            if (quantities[i] > 0 && quantities[i] < 5) {
+                cout << "   [!] ID: " << ids[i]
+                     << " | " << names[i]
+                     << " | Qty: " << quantities[i] << endl;
                 if (reportFile.is_open()) {
-                    reportFile << "ID: " << products[i].id
-                               << " | " << products[i].name
-                               << " | Qty: " << products[i].quantity << "\n";
+                    reportFile << "ID: " << ids[i]
+                               << " | " << names[i]
+                               << " | Qty: " << quantities[i] << "\n";
                 }
                 lowCount++;
             }
@@ -882,29 +864,28 @@ void generateReport() {
             reportFile.close();
         }
 
-    // Out of Stock Report (quantity = 0)
     } else if (reportType == 3) {
         cout << "      OUT OF STOCK REPORT (Qty = 0)" << endl;
         printLine(50);
-        cout << "\n   Date: " << getCurrentDateTime() << endl;
+        cout << "\n   Date: " << getDateTime() << endl;
 
         int outCount = 0;
 
         if (reportFile.is_open()) {
             reportFile << "==============================================\n";
             reportFile << "        OUT OF STOCK REPORT\n";
-            reportFile << "        Generated: " << getCurrentDateTime() << "\n";
+            reportFile << "        Generated: " << getDateTime() << "\n";
             reportFile << "==============================================\n\n";
         }
 
         for (int i = 0; i < productCount; i++) {
-            if (products[i].quantity == 0) {
-                cout << "   [X] ID: " << products[i].id
-                     << " | " << products[i].name
+            if (quantities[i] == 0) {
+                cout << "   [X] ID: " << ids[i]
+                     << " | " << names[i]
                      << " | Qty: 0" << endl;
                 if (reportFile.is_open()) {
-                    reportFile << "ID: " << products[i].id
-                               << " | " << products[i].name
+                    reportFile << "ID: " << ids[i]
+                               << " | " << names[i]
                                << " | Qty: 0\n";
                 }
                 outCount++;
@@ -934,7 +915,6 @@ void generateReport() {
     pause();
 }
 
-// Sorts the products array using bubble sort
 void sortProducts() {
     clearScreen();
     cout << "\n";
@@ -957,17 +937,17 @@ void sortProducts() {
     cin >> sortChoice;
     cin.ignore(10000, '\n');
 
-    Product temp;
-
-    // Bubble sort implementation
     if (sortChoice == 1) {
-        // Sort by name using string comparison
         for (int i = 0; i < productCount - 1; i++) {
             for (int j = 0; j < productCount - i - 1; j++) {
-                if (products[j].name > products[j + 1].name) {
-                    temp = products[j];
-                    products[j] = products[j + 1];
-                    products[j + 1] = temp;
+                if (names[j] > names[j + 1]) {
+                    int t1 = ids[j]; ids[j] = ids[j+1]; ids[j+1] = t1;
+                    string t2 = names[j]; names[j] = names[j+1]; names[j+1] = t2;
+                    string t3 = categories[j]; categories[j] = categories[j+1]; categories[j+1] = t3;
+                    string t4 = suppliers[j]; suppliers[j] = suppliers[j+1]; suppliers[j+1] = t4;
+                    int t5 = quantities[j]; quantities[j] = quantities[j+1]; quantities[j+1] = t5;
+                    double t6 = purchasePrices[j]; purchasePrices[j] = purchasePrices[j+1]; purchasePrices[j+1] = t6;
+                    double t7 = sellingPrices[j]; sellingPrices[j] = sellingPrices[j+1]; sellingPrices[j+1] = t7;
                 }
             }
         }
@@ -975,13 +955,16 @@ void sortProducts() {
         writeLog("PRODUCTS SORTED - By Name");
 
     } else if (sortChoice == 2) {
-        // Sort by selling price (low to high)
         for (int i = 0; i < productCount - 1; i++) {
             for (int j = 0; j < productCount - i - 1; j++) {
-                if (products[j].sellingPrice > products[j + 1].sellingPrice) {
-                    temp = products[j];
-                    products[j] = products[j + 1];
-                    products[j + 1] = temp;
+                if (sellingPrices[j] > sellingPrices[j + 1]) {
+                    int t1 = ids[j]; ids[j] = ids[j+1]; ids[j+1] = t1;
+                    string t2 = names[j]; names[j] = names[j+1]; names[j+1] = t2;
+                    string t3 = categories[j]; categories[j] = categories[j+1]; categories[j+1] = t3;
+                    string t4 = suppliers[j]; suppliers[j] = suppliers[j+1]; suppliers[j+1] = t4;
+                    int t5 = quantities[j]; quantities[j] = quantities[j+1]; quantities[j+1] = t5;
+                    double t6 = purchasePrices[j]; purchasePrices[j] = purchasePrices[j+1]; purchasePrices[j+1] = t6;
+                    double t7 = sellingPrices[j]; sellingPrices[j] = sellingPrices[j+1]; sellingPrices[j+1] = t7;
                 }
             }
         }
@@ -989,13 +972,16 @@ void sortProducts() {
         writeLog("PRODUCTS SORTED - By Price");
 
     } else if (sortChoice == 3) {
-        // Sort by quantity (low to high)
         for (int i = 0; i < productCount - 1; i++) {
             for (int j = 0; j < productCount - i - 1; j++) {
-                if (products[j].quantity > products[j + 1].quantity) {
-                    temp = products[j];
-                    products[j] = products[j + 1];
-                    products[j + 1] = temp;
+                if (quantities[j] > quantities[j + 1]) {
+                    int t1 = ids[j]; ids[j] = ids[j+1]; ids[j+1] = t1;
+                    string t2 = names[j]; names[j] = names[j+1]; names[j+1] = t2;
+                    string t3 = categories[j]; categories[j] = categories[j+1]; categories[j+1] = t3;
+                    string t4 = suppliers[j]; suppliers[j] = suppliers[j+1]; suppliers[j+1] = t4;
+                    int t5 = quantities[j]; quantities[j] = quantities[j+1]; quantities[j+1] = t5;
+                    double t6 = purchasePrices[j]; purchasePrices[j] = purchasePrices[j+1]; purchasePrices[j+1] = t6;
+                    double t7 = sellingPrices[j]; sellingPrices[j] = sellingPrices[j+1]; sellingPrices[j+1] = t7;
                 }
             }
         }
@@ -1010,31 +996,23 @@ void sortProducts() {
 
     saveData();
 
-    // Display sorted products
     cout << "\n   Sorted Products:" << endl;
-    cout << left;
-    cout << "   " << setw(6) << "ID"
-         << setw(20) << "Name"
-         << setw(15) << "Category"
-         << setw(10) << "Qty"
-         << setw(12) << "Purch.Price"
-         << setw(12) << "Sell.Price" << endl;
-    printLine(75);
+    cout << "   ID\t\tName\t\t\tCategory\tQty\tPurch.Price\tSell.Price" << endl;
+    printLine(85);
 
     for (int i = 0; i < productCount; i++) {
-        cout << "   " << setw(6) << products[i].id
-             << setw(20) << products[i].name
-             << setw(15) << products[i].category
-             << setw(10) << products[i].quantity
-             << "Rs." << setw(9) << products[i].purchasePrice
-             << "Rs." << setw(9) << products[i].sellingPrice << endl;
+        cout << "   " << ids[i]
+             << "\t\t" << names[i]
+             << "\t\t" << categories[i]
+             << "\t" << quantities[i]
+             << "\tRs." << purchasePrices[i]
+             << "\t\tRs." << sellingPrices[i] << endl;
     }
-    printLine(75);
+    printLine(85);
 
     pause();
 }
 
-// Shows products with low stock (quantity less than 5)
 void lowStockAlert() {
     clearScreen();
     cout << "\n";
@@ -1054,16 +1032,16 @@ void lowStockAlert() {
     cout << "\n";
 
     for (int i = 0; i < productCount; i++) {
-        if (products[i].quantity < 5) {
+        if (quantities[i] < 5) {
             alertCount++;
-            if (products[i].quantity == 0) {
-                cout << "   [OUT OF STOCK] ID: " << products[i].id
-                     << " | " << products[i].name
-                     << " | Qty: " << products[i].quantity << endl;
+            if (quantities[i] == 0) {
+                cout << "   [OUT OF STOCK] ID: " << ids[i]
+                     << " | " << names[i]
+                     << " | Qty: " << quantities[i] << endl;
             } else {
-                cout << "   [LOW STOCK]    ID: " << products[i].id
-                     << " | " << products[i].name
-                     << " | Qty: " << products[i].quantity << endl;
+                cout << "   [LOW STOCK]    ID: " << ids[i]
+                     << " | " << names[i]
+                     << " | Qty: " << quantities[i] << endl;
             }
         }
     }
@@ -1077,7 +1055,6 @@ void lowStockAlert() {
     pause();
 }
 
-// Creates a backup copy of the products data file
 void backupData() {
     clearScreen();
     cout << "\n";
@@ -1085,7 +1062,6 @@ void backupData() {
     cout << "      BACKUP DATA" << endl;
     printLine(50);
 
-    // Save current data first
     saveData();
 
     ifstream source(PRODUCTS_FILE);
@@ -1103,7 +1079,6 @@ void backupData() {
         return;
     }
 
-    // Copy file contents line by line
     string line;
     while (getline(source, line)) {
         dest << line << endl;
@@ -1116,12 +1091,10 @@ void backupData() {
 
     cout << "\n   Backup created successfully!" << endl;
     cout << "   Data backed up to: " << BACKUP_FILE << endl;
-    cout << "   Backup Date: " << getCurrentDateTime() << endl;
     cout << "   Products Backed Up: " << productCount << endl;
     pause();
 }
 
-// Displays the main menu options
 void showMenu() {
     clearScreen();
 
@@ -1146,7 +1119,6 @@ void showMenu() {
     printLine(50);
 }
 
-// Gets and returns the user's menu choice
 int getMenuChoice() {
     int choice;
     cout << "   Enter your choice (1-12): ";

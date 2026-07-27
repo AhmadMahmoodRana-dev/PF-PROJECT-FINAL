@@ -6,240 +6,71 @@
 
 ## Is Document Mein Kya Hai?
 
-Is document mein hum apne poore project ka code line by line samjhenge Roman Urdu mein. Har file, har function, aur har important line ko explain karenge taake aap easily samajh sakein ke code kaise kaam karta hai.
+Is document mein hum apne poore project ka code line by line samjhenge Roman Urdu mein. Saara code **ek hi file** (main.cpp) mein hai. Koi header file, struct ya complex library use nahi ki hai - **sirf basics**.
 
 ---
 
-## 1. product.h - Header File (Product Structure)
-
-Yeh file humare project ki **foundation** hai. Ismein humne data structures define kiye hain.
-
-```cpp
-#ifndef PRODUCT_H
-#define PRODUCT_H
-```
-**Explanation:** Yeh **header guards** hain. Agar yeh file ek se zyada baar include ho jaye toh compiler dobara isse read nahi karega. `PRODUCT_H` ek unique naam hai jo compiler ko batata hai ke yeh file already include ho chuki hai.
-
----
+## 1. Includes - Libraries
 
 ```cpp
 #include <iostream>
-```
-**Explanation:** `iostream` library include ki hai. Ismein `cout` (output print karne ke liye) aur `cin` (user se input lene ke liye) hain.
-
----
-
-```cpp
 #include <fstream>
-```
-**Explanation:** `fstream` library file handling ke liye hai. Ismein `ofstream` (file mein likhne ke liye) aur `ifstream` (file se parhne ke liye) hain.
-
----
-
-```cpp
 #include <string>
-```
-**Explanation:** `string` library C++ ki string class ke liye hai. Hum `string` type use karte hain jo C-style strings (`char[]`) se zyada safe aur easy hai. `string` ke saath hum `==` se compare kar sakte hain, `+` se jor sakte hain, aur `.find()` se search kar sakte hain.
-
-Note: Humne `<cstring>` nahi liya kyunki hum `strcmp`, `strcpy`, `strstr` jaise C functions use nahi kar rahe. C++ ka `string` class in sabka simple alternative provide karta hai.
-
----
-
-```cpp
-#include <iomanip>
-```
-**Explanation:** `iomanip` library formatted output ke liye hai. `setw()` function se hum table mein columns ki width set karte hain taake products ki list achi dikhe.
-
----
-
-```cpp
-#include <ctime>
-```
-**Explanation:** `ctime` library se current date aur time milta hai. Jab log likhna ho ya report generate karna ho toh timestamp ke liye use hota hai.
-
----
-
-```cpp
 using namespace std;
 ```
-**Explanation:** Is line se humein baar baar `std::` likhne ki zaroorat nahi padti. `cout` likh sakte hain instead of `std::cout`. Yeh beginners ke liye asaan hai.
 
----
-
-```cpp
-#define MAX_PRODUCTS 100
-```
-**Explanation:** Yeh ek **constant** define kiya hai. `MAX_PRODUCTS` ki value 100 hai. Iska matlab hai ke hum zyada se zyada 100 products store kar sakte hain. Agar 100 products ho jayein toh system naya product add nahi karega.
-
----
-
-```cpp
-struct Product {
-    int id;
-    string name;
-    string category;
-    string supplier;
-    int quantity;
-    double purchasePrice;
-    double sellingPrice;
-};
-```
-**Explanation:** Yeh **Product structure** hai. Structure ek container hai jismein related data ek saath rakhte hain. Har product ke 7 fields hain:
-
-| Field | Type | Matlab |
-|-------|------|--------|
-| `id` | `int` | Product ka unique number (jaise 1001, 1002). Do products ka ID same nahi ho sakta. |
-| `name` | `string` | Product ka naam. C++ string use karte hain (koi character limit nahi). Jaise "Dell Laptop". |
-| `category` | `string` | Product kis category mein hai. Jaise "Electronics", "Grocery". |
-| `supplier` | `string` | Supplier company ka naam. Jaise "TechWorld Pvt Ltd". |
-| `quantity` | `int` | Kitne products stock mein hain. Jaise 25. |
-| `purchasePrice` | `double` | Humne kis price par kharida. Decimal value ho sakti hai jaise 45000.50. |
-| `sellingPrice` | `double` | Hum kis price par bechenge. Decimal value ho sakti hai. |
-
----
-
-```cpp
-struct Admin {
-    string username;
-    string password;
-};
-```
-**Explanation:** Yeh **Admin structure** hai. Login system ke liye use hota hai. `string` type use kiya hai jo C++ ka standard text type hai - ismein koi character limit nahi hoti.
-
----
-
-```cpp
-extern Product products[MAX_PRODUCTS];
-extern int productCount;
-```
-**Explanation:** `extern` ka matlab hai ke yeh variables **main.cpp** mein define hain, lekin agar koi aur file inhe use karna chahe toh access kar sakti hai.
-- `products` ek **array** hai jo 100 products store karega
-- `productCount` batata hai ke abhi kitne products add kiye gaye hain
-
----
-
-```cpp
-#endif
-```
-**Explanation:** Header guard ka end. `#ifndef PRODUCT_H` ke saath match karta hai.
-
----
-
-## 2. utils.h - Helper Functions
-
-Yeh file mein **utility functions** hain jo baar baar use hote hain.
-
-```cpp
-#ifndef UTILS_H
-#define UTILS_H
-```
-**Explanation:** Header guard - same concept as product.h. Dobara include hone se bachata hai.
-
----
-
-```cpp
-inline void clearScreen() {
-    #ifdef _WIN32
-        system("cls");
-    #else
-        system("clear");
-    #endif
-}
-```
-**Explanation:** Yeh function **screen clear** karta hai.
-- `inline` keyword compiler ko batata hai ke function ki body jahan call hoti hai wahan directly paste kar do. Is se program fast hota hai chote functions ke liye.
-- `#ifdef _WIN32` check karta hai ke kya yeh Windows hai? Agar haan toh `system("cls")` chalega (Windows command).
-- Agar Linux/Mac hai toh `system("clear")` chalega.
-- `void` ka matlab hai ke yeh function kuch return nahi karta.
-
----
-
-```cpp
-inline void pause() {
-    cout << "\nPress Enter to continue...";
-    cin.get();
-}
-```
-**Explanation:** Yeh function **program ko rok deta hai** jab tak user Enter press na kare.
-- `cout` se message print hota hai.
-- `cin.get()` user ka Enter press wait karta hai. Jab Enter dabao toh program aage badhta hai.
-- Har operation ke baad yeh use hota hai taake user result dekh sake.
-
----
-
-```cpp
-inline void printLine(int length = 50) {
-    for (int i = 0; i < length; i++) {
-        cout << "=";
-    }
-    cout << endl;
-}
-```
-**Explanation:** Yeh function ek **line print** karta hai `=` signs ki.
-- `int length = 50` - Default value 50 hai. Matlab agar koi value na do toh 50 `=` signs print honge.
-- `for loop` length baar `=` print karta hai.
-- `endl` se nayi line par chala jata hai.
-- Output: `==================================================`
-
----
-
-```cpp
-inline void printBorder() {
-    cout << "\n";
-    for (int i = 0; i < 50; i++) {
-        cout << "*";
-    }
-    cout << endl;
-}
-```
-**Explanation:** Yeh `printLine()` jaisa hai lekin `*` signs use karta hai. Decorative border ke liye.
-
----
-
-```cpp
-inline string getCurrentDateTime() {
-    time_t now = time(0);
-    char* dt = ctime(&now);
-    string dateTime = dt;
-    dateTime = dateTime.substr(0, dateTime.length() - 1);
-    return dateTime;
-}
-```
-**Explanation:** Yeh function **current date aur time** return karta hai.
-- `time_t now = time(0);` - Current time seconds mein leta hai (1 Jan 1970 se ab tak ke seconds).
-- `char* dt = ctime(&now);` - Seconds ko readable date/time string mein convert karta hai. Jaise "Thu Jul 16 10:30:45 2026\n"
-- `string dateTime = dt;` - char pointer ko C++ string mein convert karta hai.
-- `dateTime.substr(0, dateTime.length() - 1);` - Aakhri character (newline `\n`) remove karta hai.
-- `return dateTime;` - Final date/time string return karta hai.
-
----
-
-## 3. main.cpp - Main Program File
-
-Yeh humari sabse badi file hai jismein saara logic hai.
-
-### 3.1 Includes aur Global Variables
-
-```cpp
-#include "product.h"
-#include "utils.h"
-```
 **Explanation:**
-- `"product.h"` - Apni product structure wali file include ki. Double quotes isliye kyunki yeh apni file hai.
-- `"utils.h"` - Helper functions wali file include ki.
-- `<cstdio>` ki zaroorat nahi kyunki hum `sprintf()` use nahi kar rahe. `to_string()` aur string concatenation (`+`) use karte hain jo zyada simple hai.
+- `iostream` - `cout` (output) aur `cin` (input) ke liye
+- `fstream` - File handling ke liye (`ofstream` likhne ke liye, `ifstream` parhne ke liye)
+- `string` - C++ ki string class ke liye (text store karne ke liye)
+- `using namespace std;` - Taake baar baar `std::` na likhna pare
+
+**Note:** Humne `<iomanip>`, `<ctime>`, aur koi aur library use NAHI ki. Sirf yeh 3 basic libraries kaafi hain.
+
+---
+
+## 2. Constants aur Parallel Arrays
+
+```cpp
+const int MAX_PRODUCTS = 100;
+```
+**Explanation:** `const int` ka matlab hai yeh value change nahi ho sakti. Maximum 100 products store ho sakte hain.
 
 ---
 
 ```cpp
-Product products[MAX_PRODUCTS];
+int ids[MAX_PRODUCTS];
+string names[MAX_PRODUCTS];
+string categories[MAX_PRODUCTS];
+string suppliers[MAX_PRODUCTS];
+int quantities[MAX_PRODUCTS];
+double purchasePrices[MAX_PRODUCTS];
+double sellingPrices[MAX_PRODUCTS];
 int productCount = 0;
-Admin admin;
 ```
-**Explanation:** Yeh **global variables** hain - poori file mein kahin bhi use ho sakte hain.
-- `products[100]` - Ek array jo 100 products store karega. Shuru mein khaali hai.
-- `productCount = 0` - Abhi 0 products hain. Jab product add hoga toh yeh barhega.
-- `admin` - Admin ka data store karega (username aur password).
+
+**Explanation:** Yeh **Parallel Arrays** hain. Ek struct ki jagah humne 7 alag arrays banayi hain. Har index `i` par saari 7 arrays mil kar ek product banati hain.
+
+**Example:** Product at index 0:
+| Array | Index 0 | Matlab |
+|-------|---------|--------|
+| `ids[0]` | 101 | Product ID |
+| `names[0]` | "Dell Laptop" | Naam |
+| `categories[0]` | "Electronics" | Category |
+| `suppliers[0]` | "TechWorld" | Supplier |
+| `quantities[0]` | 25 | Stock mein kitne |
+| `purchasePrices[0]` | 45000 | Kharidne ki qeemat |
+| `sellingPrices[0]` | 55000 | Bechne ki qeemat |
+
+- `productCount` batata hai ke abhi kitne products add hue hain (shuru mein 0)
+
+---
+
+```cpp
+string adminUser = "";
+string adminPass = "";
+```
+**Explanation:** Admin ke login credentials. Simple string variables, koi struct nahi.
 
 ---
 
@@ -250,55 +81,84 @@ const string LOGS_FILE = "data/logs.txt";
 const string REPORTS_FILE = "data/reports.txt";
 const string BACKUP_FILE = "data/backup.dat";
 ```
-**Explanation:** Yeh **file paths** hain. `const string` ka matlab hai ke yeh read-only strings hain jo change nahi hongi. C++ string use ki hai kyunki yeh `char*` se simple hai.
-- `products.dat` - Saare products ka data text format mein store hota hai (har field nayi line par).
-- `admin.dat` - Admin login credentials text format mein.
-- `logs.txt` - Har activity ka record (text format mein append mode mein).
-- `reports.txt` - Generated reports save hoti hain.
-- `backup.dat` - Products data ka backup copy.
-- Sab files `data/` folder mein save hoti hain.
+**Explanation:** File paths. `const string` matlab yeh change nahi hongi.
 
 ---
 
-### 3.2 Function Declarations (Forward Declarations)
+## 3. Function Declarations (Forward Declarations)
 
 ```cpp
 void showMenu();
 int getMenuChoice();
 void addProduct();
 void viewProducts();
-void searchProduct();
 // ... etc
 ```
-**Explanation:** Yeh **forward declarations** hain. Compiler ko pehle se bata rahe hain ke yeh functions exist karte hain. Actual code neeche likha hai. Isse compiler ko koi confusion nahi hota jab main() se call hoti hain.
+
+**Explanation:** Compiler ko pehle bata rahe hain ke yeh functions baad mein defined hain. Isse `main()` mein kisi bhi order mein call kar sakte hain.
 
 ---
 
-### 3.3 main() Function - Program ka Start Point
+## 4. Helper Functions
+
+### clearScreen()
+```cpp
+void clearScreen() {
+    for (int i = 0; i < 25; i++) {
+        cout << endl;
+    }
+}
+```
+**Explanation:** 25 blank lines print karke screen "clear" karta hai. `system("cls")` ki jagah yeh simple tarika hai.
+
+---
+
+### pause()
+```cpp
+void pause() {
+    cout << "\nPress Enter to continue...";
+    cin.get();
+}
+```
+**Explanation:** Program rok deta hai jab tak user Enter na dabaye. `cin.get()` Enter key wait karta hai.
+
+---
+
+### printLine()
+```cpp
+void printLine(int length) {
+    for (int i = 0; i < length; i++) {
+        cout << "=";
+    }
+    cout << endl;
+}
+```
+**Explanation:** `=` signs ki line draw karta hai. Default 50 characters lambi.
+
+---
+
+### getDateTime()
+```cpp
+string getDateTime() {
+    return "---";
+}
+```
+**Explanation:** Simple placeholder text return karta hai. `ctime` library ki zaroorat nahi.
+
+---
+
+## 5. main() Function - Program Start
 
 ```cpp
 int main() {
     clearScreen();
-```
-**Explanation:** `main()` function jahan se program **start** hota hai. Sabse pehle screen clear karte hain.
-
----
-
-```cpp
-    cout << "\n\n";
+    // Welcome screen
     printLine(50);
     cout << "   INVENTORY MANAGEMENT SYSTEM (IMS)" << endl;
-    cout << "   Programming Fundamentals Project" << endl;
-    printLine(50);
-    cout << "\n   Welcome to IMS!" << endl;
-    cout << "   This system helps you manage your products." << endl;
-    cout << "\n   Starting the system..." << endl;
+    // ...
     pause();
 ```
-**Explanation:** **Welcome screen** display karte hain.
-- `printLine(50)` se `=` ki line draw hoti hai.
-- IMS ka naam aur welcome message print hota hai.
-- `pause()` se user ko time milta hai padhne ka. Jab Enter dabaye toh aage badhta hai.
+**Explanation:** Program yahan se start hota hai. Pehle welcome screen dikhate hain.
 
 ---
 
@@ -307,25 +167,21 @@ int main() {
     createDefaultAdmin();
     loadAdmin();
 ```
-**Explanation:** **Startup sequence** - teen zaroori kaam:
-1. `loadData()` - Agar pehle se products.dat mein data hai toh load karo (program band hone ke baad bhi data rehta hai).
-2. `createDefaultAdmin()` - Agar admin.dat file nahi hai toh default admin banao (admin/admin123).
-3. `loadAdmin()` - Admin credentials file se load karo.
+**Explanation:** Startup pe 3 kaam:
+1. `loadData()` - Agar pehle se products hain toh file se load karo
+2. `createDefaultAdmin()` - Pehli baar admin account banao
+3. `loadAdmin()` - Admin credentials file se parho
 
 ---
 
 ```cpp
     if (!login()) {
-        cout << "\n   Login failed! Maximum attempts exceeded." << endl;
-        cout << "   Exiting system..." << endl;
+        cout << "   Login failed! Maximum attempts exceeded." << endl;
         pause();
         return 0;
     }
 ```
-**Explanation:** **Login check**. `login()` function `true` return karta hai agar login successful ho, `false` agar fail ho.
-- `!login()` ka matlab "agar login fail hai"
-- Agar 3 baar galat password dala toh program exit ho jata hai.
-- `return 0;` se program khatam ho jata hai.
+**Explanation:** `login()` true return kare toh aage badho, false toh program exit. `!` ka matlab "NOT".
 
 ---
 
@@ -334,215 +190,108 @@ int main() {
     do {
         showMenu();
         choice = getMenuChoice();
-```
-**Explanation:** **Main menu loop** - yeh do-while loop hai jo baar baar chalega jab tak user exit na kare.
-- `showMenu()` - Menu screen dikhata hai.
-- `getMenuChoice()` - User se number leta hai (1 se 12).
 
----
-
-```cpp
         switch (choice) {
             case 1: addProduct(); break;
             case 2: viewProducts(); break;
             // ... cases 3-11
-            case 12: /* exit */ break;
+            case 12: /* save and exit */ break;
             default: /* invalid */ break;
         }
     } while (choice != 12);
 ```
-**Explanation:** **Switch statement** user ki choice ke hisaab se sahi function call karta hai.
-- Agar user 1 dale toh `addProduct()` chalega.
-- Agar 2 dale toh `viewProducts()` chalega.
-- `break` zaroori hai warna neeche ke cases bhi chal jayenge (fall-through).
-- `default` tab chalta hai jab user koi galat number dale.
-- `while (choice != 12)` - Jab tak user 12 (Exit) na dale, loop chalta rahega.
+
+**Explanation:** **do-while loop** + **switch statement** ka combination:
+- `do-while` - Pehle menu dikhao, phir condition check karo (kam az kam ek baar chalta hai)
+- `switch` - User ki choice ke hisaab se sahi function call karo
+- `break` - Zaroori hai warna neeche ke cases bhi chal jayenge
+- `default` - Agar 1-12 ke ilawa koi number dale
+- `while (choice != 12)` - Jab tak Exit na dabaye, loop chalta rahe
 
 ---
 
-### 3.4 login() Function - Authentication
+## 6. login() - Authentication
 
 ```cpp
 bool login() {
     int attempts = 3;
     string username, password;
-```
-**Explanation:**
-- `bool` return type - ya toh `true` (success) ya `false` (fail) return karega.
-- `attempts = 3` - User ko 3 mauke milenge sahi password dalne ke.
-- `username` aur `password` C++ strings mein user ka input store hoga. `string` use kar rahe hain kyunki yeh `char[]` se safe aur easy hai.
 
----
-
-```cpp
     while (attempts > 0) {
-```
-**Explanation:** Jab tak attempts baaki hain (3, 2, 1), loop chalega.
-
----
-
-```cpp
-        cout << "   Username: ";
-        getline(cin, username);
-        cout << "   Password: ";
-        getline(cin, password);
-```
-**Explanation:** User se username aur password input lete hain.
-- `getline(cin, string)` use kiya hai instead of `cin >>` kyunki `getline` spaces bhi leta hai (jaise "Ahmad Mahmood").
-- `string` type use karne se koi character limit nahi hai - `char[]` mein buffer overflow ka risk nahi hota.
-
----
-
-```cpp
-        if (username == admin.username && password == admin.password) {
-```
-**Explanation:** **String comparison** - check karte hain ke user ka input admin ke credentials se match karta hai ya nahi.
-- `string` type ke saath hum `==` operator direct use kar sakte hain. `strcmp()` ki zaroorat nahi.
-- `&&` ka matlab "AUR" - dono conditions true honi chahiye (username sahi AUR password sahi).
-
----
-
-```cpp
-            writeLog("LOGIN SUCCESS - User: " + admin.username);
-```
-**Explanation:** **Log entry** bana rahe hain. String concatenation (`+`) use karte hain - "LOGIN SUCCESS" string mein admin.username jodte hain.
-- `writeLog()` ab `const string&` leta hai, isliye `c_str()` ki zaroorat nahi.
-
----
-
-```cpp
+        // ... input lete hain
+        if (username == adminUser && password == adminPass) {
             return true;
-```
-**Explanation:** Login successful! `true` return karo taake main() aage badh sake.
-
----
-
-```cpp
         } else {
-            cout << "\n   Invalid username or password!" << endl;
             attempts--;
-            writeLog(logMsg.c_str());
-            pause();
         }
-```
-**Explanation:** Agar password galat hai:
-- Error message dikhao.
-- `attempts--` se ek attempt kam ho gaya (3 → 2 → 1 → 0).
-- Failed login ka log likho.
-- Pause karo taake user error message parh sake.
-
----
-
-```cpp
-    writeLog("LOGIN BLOCKED - Maximum attempts exceeded");
-    return false;
-```
-**Explanation:** Agar 3 attempts khatam ho gaye toh:
-- Log mein likho ke login block hua.
-- `false` return karo - program exit ho jayega.
-
----
-
-### 3.5 createDefaultAdmin() - First Time Setup
-
-```cpp
-void createDefaultAdmin() {
-    ifstream checkFile(ADMIN_FILE);
-    if (checkFile.good()) {
-        checkFile.close();
-        return; // Admin file already exists
     }
-    checkFile.close();
-```
-**Explanation:**
-- `ifstream` se admin.dat file open karte hain read mode mein (ab `ios::binary` ki zaroorat nahi, text mode mein).
-- `checkFile.good()` check karta hai ke file exist karti hai aur readable hai.
-- Agar file already hai toh `return` kar jao - kuch karne ki zaroorat nahi.
-- Agar file nahi hai (pehli baar program chal raha hai) toh aage badho.
-
----
-
-```cpp
-    admin.username = "admin";
-    admin.password = "admin123";
-    saveAdmin();
+    return false;
 }
 ```
+
 **Explanation:**
-- `=` operator se "admin" username mein assign kiya aur "admin123" password mein. `string` type ke saath `=` direct use kar sakte hain, `strcpy()` ki zaroorat nahi.
-- `saveAdmin()` se admin.dat file mein save kiya.
+- `bool` return type - `true` ya `false` return karta hai
+- `while (attempts > 0)` - 3 mauke milenge
+- `getline(cin, username)` - Spaces ke saath input leta hai
+- `==` - String comparison. C++ mein `string` ke saath `==` direct use hota hai
+- `&&` - AND operator. Dono conditions true honi chahiye
+- `attempts--` - Ek attempt kam (3→2→1→0)
 
 ---
 
-### 3.6 saveAdmin() aur loadAdmin()
+## 7. File Handling Functions
+
+### saveAdmin() / loadAdmin()
 
 ```cpp
 void saveAdmin() {
     ofstream file(ADMIN_FILE);
     if (file.is_open()) {
-        file << admin.username << endl;
-        file << admin.password << endl;
+        file << adminUser << endl;
+        file << adminPass << endl;
         file.close();
     }
 }
 ```
+
 **Explanation:**
-- `ofstream` - Output file stream (file mein likhne ke liye).
-- Text mode mein file kholi (binary mode nahi) - `<<` operator se likhte hain.
-- `file << admin.username << endl;` - Username pehli line mein likho.
-- `file << admin.password << endl;` - Password doosri line mein likho.
-- Yeh binary I/O se zyada simple aur readable hai.
+- `ofstream` - Output File Stream (file mein likhne ke liye)
+- `file.is_open()` - Check karta hai file successfully khuli ya nahi
+- `file << adminUser` - `<<` operator se file mein likhte hain
+- `file.close()` - File band karo (important!)
 
 ---
 
-```cpp
-void loadAdmin() {
-    ifstream file(ADMIN_FILE);
-    if (file.is_open()) {
-        getline(file, admin.username);
-        getline(file, admin.password);
-        file.close();
-    }
-}
-```
-**Explanation:**
-- `ifstream` - Input file stream (file se parhne ke liye).
-- `getline(file, admin.username)` - Pehli line (username) parh kar admin.username mein daalta hai.
-- `getline(file, admin.password)` - Doosri line (password) parh kar admin.password mein daalta hai.
-- Text mode mein parhna binary se zyada simple hai.
-
----
-
-### 3.7 saveData() - Products Save to File
+### saveData() - Products Save
 
 ```cpp
 void saveData() {
     ofstream file(PRODUCTS_FILE);
     if (file.is_open()) {
-        // First line: total number of products
         file << productCount << endl;
         for (int i = 0; i < productCount; i++) {
-            file << products[i].id << endl;
-            file << products[i].name << endl;
-            file << products[i].category << endl;
-            file << products[i].supplier << endl;
-            file << products[i].quantity << endl;
-            file << products[i].purchasePrice << endl;
-            file << products[i].sellingPrice << endl;
+            file << ids[i] << endl;
+            file << names[i] << endl;
+            file << categories[i] << endl;
+            file << suppliers[i] << endl;
+            file << quantities[i] << endl;
+            file << purchasePrices[i] << endl;
+            file << sellingPrices[i] << endl;
         }
         file.close();
     }
 }
 ```
+
 **Explanation:**
-- Text mode mein file kholi - `<<` operator use karte hain.
-- Pehle `productCount` save karte hain (kitne products hain).
-- Phir har product ke 7 fields ko line by line file mein likhte hain.
-- **PF Concept:** Text file handling - `<<` operator se directly likhna simple hai.
+- Pehle `productCount` save karte hain (kitne products hain)
+- Phir loop mein har product ke 7 fields line by line likhte hain
+- **For loop** se har product iterate hota hai
+- **Array indexing** - `ids[i]`, `names[i]`, etc. se ith product ka data milta hai
 
 ---
 
-### 3.8 loadData() - Products Load from File
+### loadData() - Products Load
 
 ```cpp
 void loadData() {
@@ -551,450 +300,331 @@ void loadData() {
         file >> productCount;
         if (productCount > 0 && productCount <= MAX_PRODUCTS) {
             for (int i = 0; i < productCount; i++) {
-                file >> products[i].id;
-                file.ignore(); // skip the newline after id
-                getline(file, products[i].name);
-                getline(file, products[i].category);
-                getline(file, products[i].supplier);
-                file >> products[i].quantity;
-                file >> products[i].purchasePrice;
-                file >> products[i].sellingPrice;
-                file.ignore(); // skip the newline after selling price
+                file >> ids[i];
+                file.ignore();
+                getline(file, names[i]);
+                // ... baaki fields
             }
-        } else {
-            productCount = 0;
         }
         file.close();
-    } else {
-        productCount = 0;
     }
 }
 ```
+
 **Explanation:**
-- Text mode mein file kholi.
-- Pehle `file >> productCount` se count parhte hain.
-- Phir loop mein har product ke fields parhte hain: numbers `>>` se aur strings `getline()` se.
-- `file.ignore()` newline character hata deta hai jab `>>` ke baad `getline()` use karte hain.
-- Safety check: `productCount > 0 && productCount <= MAX_PRODUCTS` - agar valid number hai toh products load karo.
+- `ifstream` - Input File Stream (file se parhne ke liye)
+- `file >> productCount` - `>>` operator se number parhte hain
+- `file.ignore()` - Newline character skip karta hai (`>>` ke baad `getline` se pehle zaroori)
+- `getline(file, names[i])` - String parhta hai (spaces ke saath)
+- Safety check: `productCount > 0 && productCount <= MAX_PRODUCTS`
 
 ---
 
-### 3.9 writeLog() - Activity Logger
+### writeLog() - Activity Logger
 
 ```cpp
 void writeLog(const string& message) {
     ofstream file(LOGS_FILE, ios::app);
     if (file.is_open()) {
-        file << "[" << getCurrentDateTime() << "] " << message << endl;
+        file << "[" << getDateTime() << "] " << message << endl;
         file.close();
     }
 }
 ```
+
 **Explanation:**
-- `const string&` - Function `string` leta hai (C-style string nahi). `&` ka matlab reference hai - copy nahi hoti, original string use hoti hai.
-- `ios::app` - **Append mode**. File ke end mein likhega, purana data delete nahi hoga.
-- Har log entry ka format: `[Date Time] Message`
-- Jaise: `[Thu Jul 16 10:30:45 2026] PRODUCT ADDED - ID: 1001, Name: Dell Laptop`
+- `const string& message` - String ka reference leta hai (copy nahi hoti, fast hai)
+- `ios::app` - **Append mode** - file ke end mein likhta hai, purana data delete nahi hota
+- Har log entry: `[---] PRODUCT ADDED - ID: 101, Name: Dell Laptop`
 
 ---
 
-### 3.10 Helper Functions
+## 8. Search Functions
+
+### isDuplicateID()
 
 ```cpp
 bool isDuplicateID(int id) {
     for (int i = 0; i < productCount; i++) {
-        if (products[i].id == id) {
+        if (ids[i] == id) {
             return true;
         }
     }
     return false;
 }
 ```
-**Explanation:** **Linear Search** - check karta hai ke diya gaya ID pehle se exist karta hai ya nahi.
-- Loop se har product ka ID check karte hain.
-- Agar match mile toh `true` (duplicate hai).
-- Agar loop khatam ho jaye aur match na mile toh `false` (unique hai).
-- **PF Concept:** Linear Search Algorithm.
+
+**Explanation:** **Linear Search** - pehle se last tak check karta hai ke yeh ID pehle se hai ya nahi.
+- Loop se har `ids[i]` check karo
+- Match mile → `true` (duplicate hai)
+- Loop khatam, match nahi → `false` (unique hai)
 
 ---
+
+### findProductIndex()
 
 ```cpp
 int findProductIndex(int id) {
     for (int i = 0; i < productCount; i++) {
-        if (products[i].id == id) {
+        if (ids[i] == id) {
             return i;
         }
     }
     return -1;
 }
 ```
-**Explanation:** Product ka **index** (position) dhundta hai array mein.
-- Agar mil gaya toh uska index return karo (0, 1, 2, ...).
-- Agar nahi mila toh `-1` return karo (kyunki valid index kabhi negative nahi hota).
+
+**Explanation:** Product ka **index** dhundta hai. Agar mil gaya toh uska position return karo (0, 1, 2...). Agar nahi mila toh `-1` return karo (kyunki valid index kabhi negative nahi hota).
 
 ---
 
-### 3.11 addProduct() - CRUD: Create
+## 9. addProduct() - Naya Product Add
 
 ```cpp
 void addProduct() {
     if (productCount >= MAX_PRODUCTS) {
-        cout << "\n   ERROR: Product limit reached!";
+        cout << "   ERROR: Product limit reached!" << endl;
         pause();
         return;
     }
 ```
-**Explanation:** Pehle check karte hain ke 100 products ki limit toh nahi aa gayi. Agar haan toh error dikha ke wapas jao.
+
+**Explanation:** Pehle check karo ke 100 ki limit toh nahi aa gayi. `return` se function khatam ho jata hai.
 
 ---
 
 ```cpp
-    Product p;
-    cout << "\n   Enter Product ID: ";
-    cin >> p.id;
-```
-**Explanation:** Ek naya `Product` struct banaya `p` naam se. Phir user se ID input li.
+    int newId;
+    cout << "   Enter Product ID: ";
+    cin >> newId;
 
----
-
-```cpp
-    if (isDuplicateID(p.id)) {
-        cout << "\n   ERROR: Product ID already exists!";
+    if (isDuplicateID(newId)) {
+        cout << "   ERROR: Product ID already exists!" << endl;
         cin.clear();
         cin.ignore(10000, '\n');
         pause();
         return;
     }
 ```
-**Explanation:** Check karo ke ID pehle se toh nahi hai.
-- `cin.clear()` - Input errors clear karta hai.
-- `cin.ignore(10000, '\n')` - Buffer mein jo extra characters hain unhe hata deta hai. Yeh important hai warna next input mein problems aati hain.
+
+**Explanation:**
+- User se ID lo
+- `isDuplicateID()` check karta hai duplicate toh nahi
+- `cin.clear()` - Input errors clear karta hai
+- `cin.ignore(10000, '\n')` - Buffer mein extra characters hata deta hai
 
 ---
 
 ```cpp
-    cin.ignore(10000, '\n'); // Clear the newline after reading id
+    int pos = productCount;
+    ids[pos] = newId;
 
     cout << "   Enter Product Name: ";
-    getline(cin, p.name);
+    getline(cin, names[pos]);
+    // ... baaki fields
 ```
-**Explanation:** `cin >> p.id` ke baad buffer mein newline character reh jata hai. `cin.ignore()` se usko hataate hain taake `getline()` sahi se kaam kare. `getline(cin, p.name)` C++ string parhta hai - buffer overflow ka koi risk nahi.
+
+**Explanation:** `pos` nayi position hai (jaise agar 5 products hain toh pos = 5). Har array ke `pos` index par data store karo.
 
 ---
 
 ```cpp
-    cout << "   Enter Quantity: ";
-    cin >> p.quantity;
-    while (p.quantity < 0) {
+    while (quantities[pos] < 0) {
         cout << "   Quantity cannot be negative. Enter again: ";
-        cin >> p.quantity;
+        cin >> quantities[pos];
     }
 ```
-**Explanation:** **Input Validation** - Quantity negative nahi ho sakti. Agar user negative number dale toh dobara poocho.
-- **PF Concept:** Input Validation with while loop.
+
+**Explanation:** **Input Validation** - While loop se baar baar poocho jab tak valid input na mile. Negative quantity allowed nahi hai.
 
 ---
 
 ```cpp
-    products[productCount] = p;
     productCount++;
     saveData();
+    writeLog("PRODUCT ADDED - ID: " + to_string(ids[pos]) + ", Name: " + names[pos]);
 ```
-**Explanation:** Naya product array mein add karo:
-- `products[productCount]` mein naya product daala (jaise agar 5 products hain toh index 5 par jayega).
-- `productCount++` se count barh gaya (5 → 6).
-- `saveData()` se file mein save kiya taake program band hone ke baad bhi data rahe.
+
+**Explanation:**
+- `productCount++` - Ek product barh gaya
+- `saveData()` - File mein save karo
+- `to_string()` - Integer ko string mein convert karta hai (jaise 101 → "101")
+- `+` operator - Strings jodta hai (concatenation)
 
 ---
 
-```cpp
-    writeLog("PRODUCT ADDED - ID: " + to_string(p.id) + ", Name: " + p.name);
-```
-**Explanation:** **Log entry** bana rahe hain:
-- `to_string(p.id)` - Integer `p.id` ko string mein convert karta hai. Jaise 1001 → "1001".
-- `+` operator se saari strings jod dete hain. `sprintf()` ki zaroorat nahi.
-- Result: "PRODUCT ADDED - ID: 1001, Name: Dell Laptop"
-
----
-
-### 3.12 viewProducts() - CRUD: Read
+## 10. viewProducts() - Products Dikhana
 
 ```cpp
-    cout << left;
-    cout << "   " << setw(6) << "ID"
-         << setw(20) << "Name"
-         << setw(15) << "Category"
-         << setw(10) << "Qty"
-         << setw(12) << "Purch.Price"
-         << setw(12) << "Sell.Price" << endl;
-```
-**Explanation:** **Table header** print karte hain:
-- `cout << left` - Text left-aligned hogi.
-- `setw(6)` - ID column ki width 6 characters hogi.
-- `setw(20)` - Name column 20 characters.
-- Isse table properly aligned dikhti hai.
-
----
-
-```cpp
-    for (int i = 0; i < productCount; i++) {
-        cout << "   " << setw(6) << products[i].id
-             << setw(20) << products[i].name
-             // ... etc
+void viewProducts() {
+    if (productCount == 0) {
+        cout << "   No products in inventory." << endl;
+        pause();
+        return;
     }
+
+    cout << "   ID\t\tName\t\t\tCategory\tQty\tPurch.Price\tSell.Price" << endl;
+    printLine(85);
+
+    for (int i = 0; i < productCount; i++) {
+        cout << "   " << ids[i]
+             << "\t\t" << names[i]
+             << "\t\t" << categories[i]
+             << "\t" << quantities[i]
+             << "\tRs." << purchasePrices[i]
+             << "\t\tRs." << sellingPrices[i] << endl;
+    }
+}
 ```
-**Explanation:** **Loop** se har product print karte hain same format mein.
+
+**Explanation:**
+- Pehle empty check
+- `\t` (tab character) se columns align karte hain (iomanip ki zaroorat nahi)
+- **For loop** se har product print hota hai
+- `cout <<` chain se ek hi line mein saara data print hota hai
 
 ---
 
-### 3.13 searchProduct() - Searching
+## 11. searchProduct() - Search
 
 ```cpp
-    int searchChoice;
-    cout << "   Search by:" << endl;
-    cout << "   1. Product ID" << endl;
-    cout << "   2. Product Name" << endl;
-    cin >> searchChoice;
+    if (names[i].find(searchName) != string::npos) {
 ```
-**Explanation:** User ko **sub-menu** dikhate hain - ID se search karein ya naam se.
 
----
-
-```cpp
-        int index = findProductIndex(searchID);
-        if (index != -1) {
-            // display product
-        } else {
-            cout << "   Product not found!";
-        }
-```
-**Explanation:** `findProductIndex()` call karte hain. Agar `-1` nahi aaya toh product mil gaya.
-
----
-
-```cpp
-        if (products[i].name.find(searchName) != string::npos) {
-```
 **Explanation:** `string::find()` - String ke andar string dhundta hai.
-- Agar "Laptop" search karo aur product ka naam "Dell Laptop" hai toh match milega.
-- `string::npos` return karta hai agar match na mile (npos = not found).
-- **PF Concept:** Partial string matching using `string::find()`.
+- Agar "Laptop" search karo aur product "Dell Laptop" hai → match milega
+- `string::npos` = "not found" (match nahi mili)
+- Yeh **partial matching** hai
 
 ---
 
-### 3.14 updateProduct() - CRUD: Update
-
-```cpp
-    int field;
-    cout << "   Which field do you want to update?" << endl;
-    cout << "   1. Name" << endl;
-    cout << "   2. Category" << endl;
-    // ... etc
-    cin >> field;
-```
-**Explanation:** User se poochte hain ke **kaunsa field** update karna hai (name, category, supplier, quantity, purchase price, ya selling price).
-
----
+## 12. updateProduct() - Update
 
 ```cpp
     switch (field) {
         case 1:
-            cin.getline(products[index].name, 50);
+            getline(cin, names[index]);
             break;
-        // ... other cases
+        case 2:
+            getline(cin, categories[index]);
+            break;
+        // ... etc
     }
-    saveData();
 ```
-**Explanation:** Selected field update karo aur file mein save karo.
+
+**Explanation:** **Switch statement** se user ka chosen field update karte hain. Sirf wo ek array change hoti hai jo user ne select ki.
 
 ---
 
-### 3.15 deleteProduct() - CRUD: Delete
-
-```cpp
-    char confirm;
-    cout << "   Are you sure? (y/n): ";
-    cin >> confirm;
-```
-**Explanation:** **Confirmation** lete hain delete se pehle. User 'y' ya 'n' dabata hai.
-
----
+## 13. deleteProduct() - Delete with Shifting
 
 ```cpp
     if (confirm == 'y' || confirm == 'Y') {
         for (int i = index; i < productCount - 1; i++) {
-            products[i] = products[i + 1];
+            ids[i] = ids[i + 1];
+            names[i] = names[i + 1];
+            categories[i] = categories[i + 1];
+            suppliers[i] = suppliers[i + 1];
+            quantities[i] = quantities[i + 1];
+            purchasePrices[i] = purchasePrices[i + 1];
+            sellingPrices[i] = sellingPrices[i + 1];
         }
         productCount--;
     }
 ```
-**Explanation:** **Array element delete** karna:
-- Deleted product ke baad wale saare products ek position peeche shift karo.
-- Jaise: `[A, B, C, D, E]` mein C delete karo → `[A, B, D, E]`
-- Loop `index` se start karta hai aur `productCount - 1` tak chalta hai.
-- `products[i] = products[i + 1]` - agla product current position par copy karo.
-- `productCount--` - ek product kam ho gaya.
-- **PF Concept:** Array element deletion with shifting.
+
+**Explanation:** **Array element deletion with shifting** - PF ka important concept:
+- Deleted product ke baad wale saare products ek position peeche shift hote hain
+- `[A, B, C, D, E]` mein C delete → `[A, B, D, E]`
+- **7 arrays** shift hoti hain (parallel arrays mein har field alag array mein hai)
+- `productCount--` - Ek product kam
+- `confirm == 'y' || confirm == 'Y'` - OR operator, lowercase ya uppercase dono chalein
 
 ---
 
-### 3.16 stockIn() aur stockOut() - Stock Management
+## 14. stockIn() aur stockOut()
 
 ```cpp
-    products[index].quantity += qty;
-    saveData();
+    quantities[index] += qty;   // stockIn - add
+    quantities[index] -= qty;   // stockOut - subtract
 ```
-**Explanation (stockIn):** Product ki quantity mein `qty` add karo.
-- `+=` ka matlab `products[index].quantity = products[index].quantity + qty`
+
+**Explanation:**
+- `+=` means `quantities[index] = quantities[index] + qty`
+- `-=` means `quantities[index] = quantities[index] - qty`
+- stockOut mein pehle check: `if (qty > quantities[index])` - itna stock hai ya nahi
 
 ---
 
-```cpp
-    if (qty > products[index].quantity) {
-        cout << "   ERROR: Not enough stock!";
-        return;
-    }
-    products[index].quantity -= qty;
-```
-**Explanation (stockOut):** Pehle check karo ke itna stock hai ya nahi.
-- Agar 5 products hain aur user 10 nikalna chahe toh error dikhaao.
-- `-=` ka matlab `products[index].quantity = products[index].quantity - qty`
-
----
-
-### 3.17 generateReport() - Reports
+## 15. generateReport() - Reports
 
 ```cpp
     int totalItems = 0;
     double totalValue = 0;
     for (int i = 0; i < productCount; i++) {
-        totalItems += products[i].quantity;
-        totalValue += products[i].quantity * products[i].sellingPrice;
+        totalItems += quantities[i];
+        totalValue += quantities[i] * sellingPrices[i];
     }
 ```
-**Explanation:** **Full Inventory Report** ke liye calculations:
-- `totalItems` - Saare products ki total quantity.
-- `totalValue` - Har product ki (quantity × selling price) ka sum. Yeh total inventory ki value hai.
+
+**Explanation:**
+- `totalItems` - Saare products ki total quantity (accumulator pattern)
+- `totalValue` - Har product ki (quantity × selling price) ka sum = total inventory value
+- `+=` se running total banta hai
 
 ---
 
-```cpp
-    ofstream reportFile(REPORTS_FILE);
-    reportFile << "==============================================\n";
-    // ... report content
-    reportFile.close();
-```
-**Explanation:** Report **file mein bhi save** hoti hai (reports.txt) taake baad mein dekh sakein.
-
----
-
-### 3.18 sortProducts() - Bubble Sort
+## 16. sortProducts() - Bubble Sort
 
 ```cpp
-    if (sortChoice == 1) {
-        for (int i = 0; i < productCount - 1; i++) {
-            for (int j = 0; j < productCount - i - 1; j++) {
-                if (products[j].name > products[j + 1].name) {
-                    temp = products[j];
-                    products[j] = products[j + 1];
-                    products[j + 1] = temp;
-                }
+    for (int i = 0; i < productCount - 1; i++) {
+        for (int j = 0; j < productCount - i - 1; j++) {
+            if (names[j] > names[j + 1]) {
+                int t1 = ids[j]; ids[j] = ids[j+1]; ids[j+1] = t1;
+                string t2 = names[j]; names[j] = names[j+1]; names[j+1] = t2;
+                // ... 5 aur arrays swap
             }
         }
     }
 ```
-**Explanation:** **Bubble Sort Algorithm** - yeh PF ka important concept hai.
 
-**Kaise kaam karta hai:**
-1. Do loops hain - outer (`i`) aur inner (`j`).
-2. Inner loop mein **adjacent elements** (bagal bagal wale) compare karte hain.
-3. Agar pehla element bada hai toh **swap** karo (jagah badlo).
-4. Har outer loop iteration mein sabse bada element apni sahi jagah par chala jata hai (bubble up).
+**Explanation:** **Bubble Sort** - PF ka sabse basic sorting algorithm:
 
-**Swap Process:**
+1. **Outer loop** (`i`) - Kitne passes karne hain
+2. **Inner loop** (`j`) - Adjacent (bagal bagal wale) elements compare
+3. Agar pehla bada hai → **swap** (jagah badlo)
+4. `productCount - i - 1` - Har pass mein ek element sahi jagah aa jata hai, toh usko dobara check nahi karte
+
+**Swap karne ka tarika (3 steps):**
 ```
-temp = products[j];          // pehla element temp mein rako
-products[j] = products[j+1]; // doosra pehle ki jagah
-products[j+1] = temp;        // temp (pehla) doosre ki jagah
+temp = A[j];      // pehla element temp mein save
+A[j] = A[j+1];    // doosra pehle ki jagah
+A[j+1] = temp;    // temp (pehla) doosre ki jagah
 ```
 
-**Example:** Sort `[C, A, B]`
-- Pass 1: Compare C>A → swap → `[A, C, B]`. Compare C>B → swap → `[A, B, C]`
-- Result: `[A, B, C]` ✓
+**Parallel arrays mein:** 7 arrays ko ek saath swap karna padta hai taake product ka data bikhre nahi.
 
-**String Comparison:** `string` type ke saath hum `>` operator use kar sakte hain. `strcmp()` ki zaroorat nahi. Yeh alphabetically compare karta hai (jaise "Dell" > "Apple").
+**String comparison:** `names[j] > names[j+1]` - C++ string alphabetically compare hoti hai ("Apple" < "Dell")
+
+**Time Complexity:** O(n²) - do nested loops hain
 
 ---
 
-### 3.19 lowStockAlert() - Alert System
+## 17. backupData() - File Copy
 
 ```cpp
-    for (int i = 0; i < productCount; i++) {
-        if (products[i].quantity < 5) {
-            alertCount++;
-            if (products[i].quantity == 0) {
-                cout << "   [OUT OF STOCK] ...";
-            } else {
-                cout << "   [LOW STOCK] ...";
-            }
-        }
-    }
-```
-**Explanation:** Har product check karte hain:
-- Agar quantity 0 hai → "OUT OF STOCK" dikhaao.
-- Agar quantity 1-4 hai → "LOW STOCK" dikhaao.
-- `alertCount` track karta hai kitne alerts hain.
-
----
-
-### 3.20 backupData() - Data Backup
-
-```cpp
-    // Save current data first
-    saveData();
-    ifstream source(PRODUCTS_FILE);
-    ofstream dest(BACKUP_FILE);
     string line;
     while (getline(source, line)) {
         dest << line << endl;
     }
 ```
+
 **Explanation:**
-- Pehle current data save karo (`saveData()`).
-- `source` products.dat file kholti hai read ke liye.
-- `dest` backup.dat file kholti hai write ke liye.
-- `while (getline(source, line))` - Har line parho, phir `dest << line << endl` se doosri file mein likho. Yeh simple line-by-line copy hai.
-
----
-
-### 3.21 showMenu() aur getMenuChoice()
-
-```cpp
-void showMenu() {
-    clearScreen();
-    printLine(50);
-    cout << "      INVENTORY MANAGEMENT SYSTEM" << endl;
-    printLine(50);
-    cout << "   1.  Add Product" << endl;
-    // ... all options
-}
-```
-**Explanation:** Menu screen clear karta hai, border draw karta hai, aur saare 12 options print karta hai.
-
----
-
-```cpp
-int getMenuChoice() {
-    int choice;
-    cin >> choice;
-    cin.clear();
-    cin.ignore(10000, '\n');
-    return choice;
-}
-```
-**Explanation:** User ki choice leta hai aur return karta hai.
-- `cin.clear()` - Agar user ne letter daal diya number ki jagah toh error clear karo.
-- `cin.ignore()` - Extra characters buffer se hataao.
+- `source` products.dat kholti hai read ke liye
+- `dest` backup.dat kholti hai write ke liye
+- `while (getline(source, line))` - Har line parho jab tak file khatam na ho
+- `dest << line` - Doosri file mein likho
+- Yeh **line-by-line file copy** hai
 
 ---
 
@@ -1002,22 +632,24 @@ int getMenuChoice() {
 
 | Concept | Kahan Use Hua |
 |---------|--------------|
-| **Variables** | productCount, choice, id, qty, etc. |
-| **Data Types** | int (ID, quantity), string (name), double (price) |
-| **Arrays** | products[MAX_PRODUCTS] - 100 products store |
-| **Structures** | Product struct, Admin struct |
-| **Functions** | 20+ functions - modular code |
-| **Loops** | for (arrays iterate), while (validation), do-while (menu) |
-| **If-Else** | Conditions check, login validation |
-| **Switch** | Menu choice handling |
-| **File Handling** | Text files (products.dat, admin.dat, logs.txt, reports.txt) - <<, >>, getline |
-| **Searching** | Linear search (findProductIndex, isDuplicateID) |
-| **Sorting** | Bubble sort (sortProducts) |
-| **Input Validation** | Negative numbers check, duplicate ID check |
-| **String Operations** | string type, == comparison, + concatenation, .find() search |
-| **Header Files** | product.h, utils.h - code organization |
-| **Global Variables** | products[], productCount |
-| **Constants** | MAX_PRODUCTS, file paths |
+| **Variables** | productCount, choice, id, qty |
+| **Data Types** | int, string, double, bool, char |
+| **Arrays** | 7 parallel arrays (ids, names, categories, etc.) |
+| **Constants** | `const int MAX_PRODUCTS = 100` |
+| **Functions** | 20+ functions |
+| **For Loop** | Arrays iterate, sorting, table print |
+| **While Loop** | Input validation, file reading |
+| **Do-While Loop** | Main menu (kam az kam ek baar chale) |
+| **If-Else** | Login check, conditions, search |
+| **Switch** | Menu choice, update field |
+| **File I/O** | ofstream (write), ifstream (read), append mode |
+| **Linear Search** | findProductIndex, isDuplicateID |
+| **Bubble Sort** | sortProducts |
+| **Input Validation** | Negative numbers, duplicate IDs |
+| **String Operations** | ==, +, .find(), string::npos, to_string() |
+| **Boolean Logic** | &&, !, == |
+| **Character Comparison** | 'y' == 'Y' \|\| confirm |
+| **Accumulator Pattern** | totalItems +=, totalValue += |
 
 ---
 
